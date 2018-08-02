@@ -16,5 +16,5 @@ Steps:
 
 # This gets the code signing certificate and stores it in a variable
 $CSCert = Get-ChildItem -Path Cert:\CurrentUser\My -CodeSigningCert
-# This Digitally signs the PS script with the CS certificte
+# This Digitally signs the PS script with the CS certificte.
 Set-AuthenticodeSignature -Certificate $CSCert -FilePath E:\say-hello.ps1
