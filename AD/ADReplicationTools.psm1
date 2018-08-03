@@ -69,10 +69,11 @@ DSA invocationID: 79476b9b-55f9-4e58-91d2-86326d85a80f
 
 function Get-ADUpToDatenessVector {
   Param (
-    [string]$ComputerName 
+    [string]$ComputerName = 'localhost',
+    [string]$PartitionName = '*'
   )
   $UDV = @()
-  $AllResults = Get-ADReplicationUpToDatenessVectorTable -Target $ComputerName -Partition * | 
+  $AllResults = Get-ADReplicationUpToDatenessVectorTable -Target $ComputerName -Partition $PartitionName | 
                  Sort-Object -Property LastReplicationSuccess -Descending 
   foreach ($Result in $AllResults) {
     if ($UDV -eq $null) {$UDV += $Result}
