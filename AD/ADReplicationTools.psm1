@@ -1,4 +1,18 @@
 function Get-ADObjectMeta {
+<#
+.SYNOPSIS
+  Gets metadata from an AD object
+.DESCRIPTION
+  This shows all relevant infomation regarding attribute level replication 
+.EXAMPLE
+  Get-ADObjectMeta -UserName bob -ComputerName lon-dc1
+  This command contacts the DC named lon-dc1 and finds the attribute data for the user bob
+.NOTES
+  General notes
+  Created by: Brent Denny
+  Created on: 10 Jul 2018
+#>
+  [cmdletbinding()]
   Param (
     $UserName = 'Administrator'
   )
@@ -15,8 +29,17 @@ function Get-ADObjectMeta {
 
 function Get-ADHighWaterMark {
 <#
-.Synopsis
-  A list of updates from replication partners
+.SYNOPSIS
+  Gets the High Water Mark database from the DC
+.DESCRIPTION
+  This shows all info stored in the HWM DB 
+.EXAMPLE
+  Get-ADHighWaterMArk -ComputerName lon-dc1
+  This command contacts the DC named lon-dc1 and shows the contents of the HWM DB
+.NOTES
+  General notes
+  Created by: Brent Denny
+  Created on: 10 Jul 2018
 #>
 [cmdletbinding()]
   Param (
@@ -74,8 +97,17 @@ DSA invocationID: 79476b9b-55f9-4e58-91d2-86326d85a80f
 
 function Get-ADUpToDatenessVector {
 <#
-.Synopsis
-  A list of All Originating updates
+.SYNOPSIS
+  Gets the Up To Dateness Vector database from the DC
+.DESCRIPTION
+  This shows all info stored in the UDV DB 
+.EXAMPLE
+  Get-ADUpToDatenessVector -ComputerName lon-dc1 -Partition 'dc=adatum,dc=com'
+  This command contacts the DC named lon-dc1 and shows the contents of the UDV DB for the domain naming context
+.NOTES
+  General notes
+  Created by: Brent Denny
+  Created on: 10 Jul 2018
 #>
   [cmdletbinding()]
   Param (
