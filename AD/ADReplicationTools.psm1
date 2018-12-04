@@ -14,6 +14,11 @@ function Get-ADObjectMeta {
 } 
 
 function Get-ADHighWaterMark {
+<#
+.Synopsis
+  A list of updates from replication partners
+#>
+[cmdletbinding()]
   Param (
     [string]$ComputerName
   )
@@ -68,6 +73,11 @@ DSA invocationID: 79476b9b-55f9-4e58-91d2-86326d85a80f
 }
 
 function Get-ADUpToDatenessVector {
+<#
+.Synopsis
+  A list of All Originating updates
+#>
+  [cmdletbinding()]
   Param (
     [string]$ComputerName = 'localhost',
     [string]$PartitionName = '*'
