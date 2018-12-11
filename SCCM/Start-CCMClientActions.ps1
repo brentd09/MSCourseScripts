@@ -1,4 +1,17 @@
 ﻿[cmdletbinding()]
+<#
+.SYNOPSIS
+  This Triggers the SCCM Client actions
+.DESCRIPTION
+  This script was written for those that want to trigger all of the client actions without having
+  go to the control panel and run each task one by one
+.EXAMPLE
+  Start-CMClientActions.ps1
+.NOTES
+  General notes
+  Created by: Brent Denny
+  Created on: 25 Oct 2018
+#>
 Param()
 $ClientActions = @'
 GUID,Name
