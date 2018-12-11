@@ -1,5 +1,4 @@
-﻿[cmdletbinding()]
-<#
+﻿<#
 .SYNOPSIS
   This Triggers the SCCM Client actions
 .DESCRIPTION
@@ -12,6 +11,7 @@
   Created by: Brent Denny
   Created on: 25 Oct 2018
 #>
+[cmdletbinding()]
 Param()
 $ClientActions = @'
 GUID,Name
