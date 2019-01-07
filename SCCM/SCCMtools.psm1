@@ -31,7 +31,7 @@
   $SiteCodeFull = $SiteCode + ':'
   $ModulesLoaded = Get-Module
   $PSDrives = Get-PSDrive
-  if ($ModulesLoaded.Name -contains 'ConfigurationManager' -and $PSDrives -contains $SiteCode) {
+  if ($ModulesLoaded.Name -contains 'ConfigurationManager' -and $PSDrives.Name -contains $SiteCode) {
     Set-Location $SiteCodeFull
     $CurrentCollections =  Get-CMCollection
     if ($CurrentCollections.name -notcontains $CollectionName) {
