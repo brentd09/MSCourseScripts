@@ -8,6 +8,16 @@
      computername must be on a seperate line. If the Collection exists it just
      adds the computers to that collection if not it will create the collection
      first.
+  .PARAMETER SiteCode
+     This requires the thee character site code
+  .PARAMETER CollectionName
+     This requires the name of the collection that will eith be created or added to
+  .PARAMETER FileName
+     This requires the filename of the file containing the computernames that will
+     be used to add to the collection
+  .PARAMETER LimitingCollection
+     This is an optional parameter that will specify the limiting collection used to
+     initially create the collection
   .EXAMPLE
      Add-CMNamesToCollection -SiteCode S01 -CollectionName Coll001 -FileName c:\computers.txt
   .EXAMPLE
@@ -41,7 +51,13 @@
     #Check to see if the Collection requested already exists
     if ($CurrentCollections.name -notcontains $CollectionName) {
       #Create Collection
-      $Collection = New-CMDeviceCollection -Name $CollectionName -LimitingCollectionName $LimitingCollection
+      $ErrorActionPreference = 'stop'
+      try {$Collection = New-CMDeviceCollection -Name $CollectionName -LimitingCollectionName $LimitingCollection }
+      catch {
+        Write-Warning "There was a problem creating the collection with the limiting collection - $LimitingCollection "
+        $ErrorActionPreference = 'continue'
+        break
+      }
     }
     else {
       #Find Collection
