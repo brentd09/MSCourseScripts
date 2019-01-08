@@ -9,9 +9,9 @@
      adds the computers to that collection if not it will create the collection
      first.
   .PARAMETER SiteCode
-     This requires the thee character site code
+     This requires the thee character site code for SCCM
   .PARAMETER CollectionName
-     This requires the name of the collection that will eith be created or added to
+     This requires the name of the SCCM collection that will either be created or added to
   .PARAMETER FileName
      This requires the filename of the file containing the computernames that will
      be used to add to the collection
@@ -20,8 +20,11 @@
      initially create the collection
   .EXAMPLE
      Add-CMNamesToCollection -SiteCode S01 -CollectionName Coll001 -FileName c:\computers.txt
+     This example shows the requred parameters for this command. The limiting collection will 
+     be automatically set to All Systems by default.
   .EXAMPLE
      Add-CMNamesToCollection -SiteCode S01 -CollectionName Coll001 -FileName c:\computers.txt -LimitingCollection "All Systems"
+     This example allows us to add a limiting collection to initialise the new collection
   .NOTES
      General Notes
      Created by: Brent Denny
@@ -37,48 +40,38 @@
     [string]$Filename,
     [string]$LimitingCollection = "All Systems"
   )
-  #Make sure the Site Code only has 3 Characters
-  $SiteCode = $SiteCode -replace "(\w{3}).*",'$1'
-  #Create the drive name used to connect to the PSDrive of CM
+  $SiteCode = $SiteCode -replace "^(\w{3}).*",'$1'
   $SiteCodeDrive = $SiteCode + ':'
-  $ModulesLoaded = Get-Module
-  $PSDrives = Get-PSDrive
-  #Check if this script is running from a PS window from the SCCM site server
-  if ($ModulesLoaded.Name -contains 'ConfigurationManager' -and $PSDrives.Name -contains $SiteCode) {
-    #Move the the PSDrive of the SCCM server
+  $CurrentModulesLoaded = Get-Module
+  $CurrentPSDrives = Get-PSDrive
+  #Check if this script is running from a PS window on the SCCM site server
+  if ($CurrentModulesLoaded.Name -contains 'ConfigurationManager' -and $CurrentPSDrives.Name -contains $SiteCode) {
     Set-Location $SiteCodeDrive
     $CurrentCollections =  Get-CMCollection
-    #Check to see if the Collection requested already exists
     if ($CurrentCollections.name -notcontains $CollectionName) {
-      #Create Collection
-      $ErrorActionPreference = 'stop'
-      try {$Collection = New-CMDeviceCollection -Name $CollectionName -LimitingCollectionName $LimitingCollection }
+      try {
+        $Collection = New-CMDeviceCollection -Name $CollectionName -LimitingCollectionName $LimitingCollection -ErrorAction 'Stop'
+      }
       catch {
-        Write-Warning "There was a problem creating the collection with the limiting collection - $LimitingCollection "
-        $ErrorActionPreference = 'continue'
+        Write-Warning "There was a problem creating the Collection- $CollectionName, with the limiting collection- $LimitingCollection"
         break
       }
     }
     else {
-      #Find Collection
       $Collection = Get-CMCollection | Where-Object {$_.Name -eq $CollectionName}
     }
-    #Get Computer names from text file
-    $PCs = Get-Content $Filename | where-Object {$_ -match '\w'}
-    #Find which names match objects in SCCM and disregard others
-    $DevicesToAdd = Get-CMResource -Fast | Where-Object {$_.Name -in $Pcs}
-    #Check to see if the number of devices is greater than 0
-    if ($DevicesToAdd.Count -gt 0) {
-      foreach ($Device in $DevicesToAdd) {
-        #For each device create a rule that will add that device to the collection
+    $PCsFromTexFile = Get-Content $Filename | where-Object {$_ -match '\w'}
+    $DevicesToAddToCollection = Get-CMResource -Fast | Where-Object {$_.Name -in $PcsFromTexFile}
+    if ($DevicesToAddToCollection.Count -gt 0) {
+      foreach ($Device in $DevicesToAddToCollection) {
         Add-CMDeviceCollectionDirectMembershipRule -CollectionId $Collection.CollectionID -ResourceID $Device.ResourceID 
       }
     }
-    else {
-      Write-Warning 'There were no matching computer objects found to add'
+    elseif ($DevicesToAddToCollection.Count -eq 0) {
+      Write-Warning 'There were no matching computer objects found to add to the collection'
+      break
     }
-    #Check to see if there were some computer names from the text file that did not match objects in SCCM
-    if ($DevicesToAdd.Count -ne $PCs.Count) {
+    if ($DevicesToAddToCollection.Count -ne $PCsFromTexFile.Count) {
       Write-Warning 'Not all computers were found in Confiruation Manager'
     }
   }
