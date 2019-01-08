@@ -98,7 +98,7 @@ function Start-CMClientActions {
   #>
   [cmdletbinding()]
   Param(
-    [string]$ComputerName = $env:COMPUTERNAME
+    [string[]]$ComputerName = $env:COMPUTERNAME
   )
 
 $ClientActions = @'
@@ -153,14 +153,19 @@ GUID,Name
 {00000000-0000-0000-0000-000000000222},Endpoint AM policy reevaluate 
 {00000000-0000-0000-0000-000000000223},External event detection
 '@
-  $ActionsObj = ConvertFrom-Csv $ClientActions
-  foreach ($Action in $ActionsObj) {
-    try {
-      Invoke-WmiMethod -Namespace Root/CCM -Class SMS_Client -Name TriggerSchedule -ArgumentList $Action.GUID -ComputerName $ComputerName -ErrorAction Stop *>$null
-      Write-Host -ForegroundColor green ("$($Action.Name) appeared to run successfully" -replace '\s{2,}',' ' )
+  foreach ($Computer in $ComputerName) {
+    Write-Host -ForegroundColor Yellow "Attempting to run the SCCM Client actions for $Computer"
+    $ActionsObj = ConvertFrom-Csv $ClientActions
+    foreach ($Action in $ActionsObj) {
+      try {
+        Invoke-WmiMethod -Namespace Root/CCM -Class SMS_Client -Name TriggerSchedule -ArgumentList $Action.GUID -ComputerName $Computer -ErrorAction Stop *>$null
+        Write-Host -ForegroundColor green ("$($Action.Name) appeared to run successfully" -replace '\s{2,}',' ' )
+      }
+      catch {
+        # I do not like these warnings appearing so commented it out
+        #Write-Warning -ForegroundColor Red ("$($Action.Name) failed to run" -replace '\s{2,}',' ' )
+      }
     }
-    catch {
-      #Write-Host -ForegroundColor Red ("$($Action.Name) failed to run" -replace '\s{2,}',' ' )
-    }
-  }
+    write-host
+  }  
 }
