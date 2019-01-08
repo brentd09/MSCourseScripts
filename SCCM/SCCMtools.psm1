@@ -27,29 +27,41 @@
     [string]$Filename,
     [string]$LimitingCollection = "All Systems"
   )
+  #Make sure the Site Code only has 3 Characters
   $SiteCode = $SiteCode -replace "(\w{3}).*",'$1'
-  $SiteCodeFull = $SiteCode + ':'
+  #Create the drive name used to connect to the PSDrive of CM
+  $SiteCodeDrive = $SiteCode + ':'
   $ModulesLoaded = Get-Module
   $PSDrives = Get-PSDrive
+  #Check if this script is running from a PS window from the SCCM site server
   if ($ModulesLoaded.Name -contains 'ConfigurationManager' -and $PSDrives.Name -contains $SiteCode) {
-    Set-Location $SiteCodeFull
+    #Move the the PSDrive of the SCCM server
+    Set-Location $SiteCodeDrive
     $CurrentCollections =  Get-CMCollection
+    #Check to see if the Collection requested already exists
     if ($CurrentCollections.name -notcontains $CollectionName) {
+      #Create Collection
       $Collection = New-CMDeviceCollection -Name $CollectionName -LimitingCollectionName $LimitingCollection
     }
     else {
+      #Find Collection
       $Collection = Get-CMCollection | Where-Object {$_.Name -eq $CollectionName}
     }
+    #Get Computer names from text file
     $PCs = Get-Content $Filename | where-Object {$_ -match '\w'}
+    #Find which names match objects in SCCM and disregard others
     $DevicesToAdd = Get-CMResource -Fast | Where-Object {$_.Name -in $Pcs}
-    if ($DevicesToAdd.Count -ne 0) {
+    #Check to see if the number of devices is greater than 0
+    if ($DevicesToAdd.Count -gt 0) {
       foreach ($Device in $DevicesToAdd) {
+        #For each device create a rule that will add that device to the collection
         Add-CMDeviceCollectionDirectMembershipRule -CollectionId $Collection.CollectionID -ResourceID $Device.ResourceID 
       }
     }
     else {
       Write-Warning 'There were no matching computer objects found to add'
     }
+    #Check to see if there were some computer names from the text file that did not match objects in SCCM
     if ($DevicesToAdd.Count -ne $PCs.Count) {
       Write-Warning 'Not all computers were found in Confiruation Manager'
     }
