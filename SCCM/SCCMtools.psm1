@@ -80,7 +80,7 @@
   }
 }
 
-function Start-CMClientActions {
+function Start-CMClientAction {
   <#
     .SYNOPSIS
       This Triggers the SCCM Client actions
@@ -88,9 +88,9 @@ function Start-CMClientActions {
       This script was written for those that want to trigger all of the client actions without having
       go to the control panel and run each task one by one
     .EXAMPLE
-      Start-CMClientActions
+      Start-CMClientAction
     .EXAMPLE
-      Start-CMClientActions -ComputerName LON-CL1
+      Start-CMClientAction -ComputerName LON-CL1,LON-CL2
     .NOTES
       General notes
       Created by: Brent Denny
