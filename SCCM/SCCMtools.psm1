@@ -167,5 +167,42 @@ GUID,Name
       }
     }
     write-host
-  }  
+  }
+}
+
+function Compare-AppsInstalled {
+  <#
+  .SYNOPSIS
+     Compares installed applications on two computers
+  .DESCRIPTION
+     This will show the difference between two machines installed applications
+  .PARAMETER ReferenceComputer
+     The computer that we are comparing against
+  .PARAMETER DifferenceComputer
+     The computer that we are comparing
+  .EXAMPLE
+     Compare-AppsInstalled -ReferenceComputer lon-dc1 -DifferenceComputer lon-cl1
+     This will compare the applications installed on both systems and create an output
+     showing which application, its version and which computer it is missing from
+  .NOTES
+     General Notes
+     Created by: Brent Denny
+     Created on: 9 Jan 2019
+  #>
+  [cmdletbinding()]
+  Param (
+    [Parameter(Mandatory=$true)]    
+    [string]$ReferenceComputer,
+    [Parameter(Mandatory=$true)]
+    [string]$DifferenceComputer
+  )
+  $RefComputerApps = Get-WmiObject -Class win32_Product -ComputerName $ReferenceComputer
+  $DifComputerApps = Get-WmiObject -Class win32_Product -ComputerName $DifferenceComputer
+  $CompareApps = Compare-Object $RefComputerApps $DifComputerApps
+  $CompareApps | select-object -Property @{n='Name';e={$_.InputObject.Name}},
+                                         @{n='Version';e={$_.InputObject.Version}},
+                                         @{n='NotInstslledOn';e={
+                                           if ($_.sideindicator -eq '<=') {$DifferenceComputer}
+                                           elseif ($_.sideindicator -eq '=>') {$ReferenceComputer}
+                                         }}
 }
