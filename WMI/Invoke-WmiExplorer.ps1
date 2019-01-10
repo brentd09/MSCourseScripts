@@ -21,13 +21,11 @@ $FormWMIExplorer.text            = "Brents WMI Explorer"
 $FormWMIExplorer.TopMost         = $false
 
 $ComboBoxNameSpace                = New-Object system.Windows.Forms.ComboBox
-$ComboBoxNameSpace.text           = "listBox"
 $ComboBoxNameSpace.width          = 277
 $ComboBoxNameSpace.height         = 30
 $ComboBoxNameSpace.location       = New-Object System.Drawing.Point(14,44)
 
 $ComboBoxClass                    = New-Object system.Windows.Forms.ComboBox
-$ComboBoxClass.text               = "listBox"
 $ComboBoxClass.width              = 378
 $ComboBoxClass.height             = 30
 $ComboBoxClass.location           = New-Object System.Drawing.Point(312,44)
@@ -49,14 +47,11 @@ $labelClass.location             = New-Object System.Drawing.Point(317,26)
 $labelClass.Font                 = 'Microsoft Sans Serif,10'
 
 $labelClassRefresh               = New-Object system.Windows.Forms.Label
-$labelClassRefresh.text          = 'test'
 $labelClassRefresh.AutoSize      = $true
 $labelClassRefresh.width         = 25
 $labelClassRefresh.height        = 10
 $labelClassRefresh.location      = New-Object System.Drawing.Point(317,70)
 $labelClassRefresh.Font          = 'Microsoft Sans Serif,10'
-
-
 
 $ListViewOutput                  = New-Object system.Windows.Forms.ListView
 $ListViewOutput.text             = "listView"
@@ -72,7 +67,15 @@ $labelClassContents.height       = 10
 $labelClassContents.location     = New-Object System.Drawing.Point(19,93)
 $labelClassContents.Font         = 'Microsoft Sans Serif,10'
 
-$FormWMIExplorer.controls.AddRange(@($ComboBoxNameSpace,$ComboBoxClass,$labelNameSpace,$labelClass,$labelClassRefresh,$ListViewOutput,$labelClassContents))
+$FormWMIExplorer.controls.AddRange(@(
+  $ComboBoxNameSpace,
+  $ComboBoxClass,
+  $labelNameSpace,
+  $labelClass,
+  $labelClassRefresh,
+  $ListViewOutput,
+  $labelClassContents
+))
 
 $ComboBoxNameSpace.Add_SelectedValueChanged({
   $ComboBoxClass.DataSource = @('')
@@ -85,7 +88,7 @@ $ComboBoxNameSpace.Add_SelectedValueChanged({
 
 $ComboBoxClass.Add_SelectedValueChanged({
   $SelectedValue = $ComboBoxClass.SelectedValue
-  if ($SelectedValue) {
+  if ($SelectedValue -ne '') {
     $ClassDetails = Get-WmiObject -Namespace $CurrentNameSpace -Class $SelectedValue | Select-Object -Property *
     $ListViewOutput.text = $ClassDetails | Out-String
   }
