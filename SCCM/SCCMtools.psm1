@@ -1,4 +1,10 @@
-﻿function Add-CMNamesToCollection {
+﻿<#
+  Functions in this module
+    Add-CMNamesToCollection
+    Start-CMClientAction
+    Compare-AppsInstalled
+#>
+function Add-CMNamesToCollection {
   <#
   .SYNOPSIS
      Add Computers into a Device Collection

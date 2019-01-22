@@ -1,4 +1,8 @@
-﻿function Get-CurrentUserSID {
+﻿<#
+  Functions in this module
+    Get-CurrentUserSID
+#>
+function Get-CurrentUserSID {
 [Cmdletbinding()]
 Param()
 $Template = @'

@@ -1,3 +1,10 @@
+<#
+  Functions in this module
+    Get-ADObjectMeta
+    Get-ADHighWaterMark
+    Get-ADUpToDatenessVector
+#>
+
 function Get-ADObjectMeta {
 <#
 .SYNOPSIS
@@ -26,7 +33,6 @@ function Get-ADObjectMeta {
                      @{n='ChangeTime';e={$_.LastOriginatingChangeTime}},
                      @{n='Version';e={$_.Version}}
 } 
-
 function Get-ADHighWaterMark {
 <#
 .SYNOPSIS
@@ -94,7 +100,6 @@ DSA invocationID: 79476b9b-55f9-4e58-91d2-86326d85a80f
   
   invoke-command -ComputerName $ComputerName {repadmin /showreps | ConvertFrom-String -TemplateContent $USING:ConvTemplate }
 }
-
 function Get-ADUpToDatenessVector {
 <#
 .SYNOPSIS

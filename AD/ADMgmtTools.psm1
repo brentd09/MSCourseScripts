@@ -1,3 +1,7 @@
+<#
+  Functions in this module
+    Get-ADFsmoMasters
+#>
 function Get-ADFsmoMasters {
   <#
   .Synopsis
