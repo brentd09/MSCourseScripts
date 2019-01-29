@@ -27,6 +27,7 @@ function Get-ADFsmoMasters {
   #>
   Param (
     [string]$DomainController = ([system.net.dns]::GetHostByName($env:COMPUTERNAME)).HostName
+    
   )
   # Query with the current credentials
   try {
