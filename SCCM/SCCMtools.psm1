@@ -193,19 +193,27 @@ function Compare-AppsInstalled {
   .NOTES
      General Notes
      Created by: Brent Denny
-     Created on: 9 Jan 2019
+     Created on:  9 Jan 2019
+     ChangeLog:
+       25 Mar 2019 - Added Credentials parameter and try, catch to the script
   #>
   [cmdletbinding()]
   Param (
     [Parameter(Mandatory=$true)]    
     [string]$ReferenceComputer,
     [Parameter(Mandatory=$true)]
-    [string]$DifferenceComputer
+    [string]$DifferenceComputer,
+    [pscredential]$Credentials = (Get-Credential -Message "Please enter the credentials to access both computers")
   )
-  $RefComputerApps = Get-WmiObject -Class win32_Product -ComputerName $ReferenceComputer
-  $DifComputerApps = Get-WmiObject -Class win32_Product -ComputerName $DifferenceComputer
+  try{
+    $RefComputerApps = Get-WmiObject -Class win32_Product -ComputerName $ReferenceComputer -Credential $Credentials -ErrorAction stop
+    $DifComputerApps = Get-WmiObject -Class win32_Product -ComputerName $DifferenceComputer -Credential $Credentials -ErrorAction stop
+  }
+  Catch {
+    Write-Warning -Message "There apears to be a problem accessing to either $ReferenceComputer or $DifferenceComputer"
+  }
   $CompareApps = Compare-Object $RefComputerApps $DifComputerApps
-  $CompareApps | select-object -Property @{n='Name';e={$_.InputObject.Name}},
+  $CompareApps | Select-Object -Property @{n='Name';e={$_.InputObject.Name}},
                                          @{n='Version';e={$_.InputObject.Version}},
                                          @{n='NotInstslledOn';e={
                                            if ($_.sideindicator -eq '<=') {$DifferenceComputer}
