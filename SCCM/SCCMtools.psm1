@@ -196,6 +196,7 @@ function Compare-AppsInstalled {
      Created on:  9 Jan 2019
      ChangeLog:
        25 Mar 2019 - Added Credentials parameter and try, catch to the script
+                     Setup ping tests to both computers
   #>
   [cmdletbinding()]
   Param (
@@ -205,6 +206,11 @@ function Compare-AppsInstalled {
     [string]$DifferenceComputer,
     [pscredential]$Credentials = (Get-Credential -Message "Please enter the credentials to access both computers")
   )
+
+  $RefAccess = Test-NetConnection -ComputerName $ReferenceComputer
+  $DifAccess = Test-NetConnection -ComputerName $DifferenceComputer
+  if ($RefAccess.PingSucceeded -eq  $false) {Write-Warning -Message "The computer $ReferenceComputer could not be contacted"}
+  if ($DifAccess.PingSucceeded -eq  $false) {Write-Warning -Message "The computer $DifferenceComputer could not be contacted"}
   try{
     $RefComputerApps = Get-WmiObject -Class win32_Product -ComputerName $ReferenceComputer -Credential $Credentials -ErrorAction stop
     $DifComputerApps = Get-WmiObject -Class win32_Product -ComputerName $DifferenceComputer -Credential $Credentials -ErrorAction stop
