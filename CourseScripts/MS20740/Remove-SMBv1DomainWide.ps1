@@ -24,7 +24,7 @@ try {
   $Computers = Get-AdComputer -filter * -ErrorAction Stop
   foreach ($Computer in $Computers) {
     try {
-      Invoke-Command -ComputerName $Computer.Name -ScriptBlock -ErrorAction Stop {
+      Invoke-Command -ComputerName $Computer.Name -ErrorAction Stop -ScriptBlock {
         $SMBServerConfig = Get-SmbServerConfiguration
         if ($SMBServerConfig.EnableSMB1Protocol -eq $true -and $ReportOnly -eq $false) {
           Set-SmbServerConfiguration -EnableSMB1Protocol $false
