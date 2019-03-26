@@ -34,7 +34,7 @@ try {
     }
     catch {
       $props = @{
-        ComputerName = $Computer
+        ComputerName = $Computer.Name
         SMB1Enabled = "Unknown"
       }
       new-object -TypeName psobject -Property $props
