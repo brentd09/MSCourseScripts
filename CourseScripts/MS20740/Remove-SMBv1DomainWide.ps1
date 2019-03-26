@@ -1,8 +1,14 @@
 <#
 .SYNOPSIS
-  Gets or reports on the SMBv1 availability within your domain
+  Sets or reports the SMBv1 availability within your domain.
 .DESCRIPTION
-  Long description
+  This script can disable or enable and report on the SMBv1 usage on the
+  computers within your domain. This command can only be run where the 
+  ActiveDirectory module can be loaded as it searches the domain controllers
+  for knowledge of the computers within that domain. Once it enables or 
+  diasbles the SMBv1 dialect it will then report on each computer's status,
+  if it can not find a computer that is listed in the domain a report of 
+  UNKNOWN status will be shown.
 .PARAMETER ReportOnly
   Reports on the status of the SMBv1 dialect on every machine in the domain
 .PARAMETER EnableSMBv1
