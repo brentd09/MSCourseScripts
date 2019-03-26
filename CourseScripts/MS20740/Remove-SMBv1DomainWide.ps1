@@ -26,10 +26,10 @@ try {
     try {
       Invoke-Command -ComputerName $Computer.Name -ErrorAction Stop -ScriptBlock {
         $SMBServerConfig = Get-SmbServerConfiguration
-        if ($SMBServerConfig.EnableSMB1Protocol -eq $true -and $ReportOnly -eq $false) {
-          Set-SmbServerConfiguration -EnableSMB1Protocol $false
+        if ($SMBServerConfig.EnableSMB1Protocol -eq $true -and $Using:ReportOnly -eq $false) {
+          Set-SmbServerConfiguration -EnableSMB1Protocol $false -Confirm:$false
         }
-        $SMBServerConfig
+        Get-SmbServerConfiguration
       } | Select-Object -Property @{n='ComputerName';e={$_.PSComputerName}},@{n='SMB1Enabled';e={$_.EnableSMB1Protocol}}
     }
     catch {
