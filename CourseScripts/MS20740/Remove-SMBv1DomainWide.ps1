@@ -3,14 +3,24 @@
   Gets or reports on the SMBv1 availability within your domain
 .DESCRIPTION
   Long description
+.PARAMETER ReportOnly
+  Reports on the status of the SMBv1 dialect on every machine in the domain
+.PARAMETER EnableSMBv1
+  Enables the SMBv1 dialect on every computer in the domain that currently
+  has it disabled. Without this parameter the command will remove the SMBv1
+  dialect from all the domain computers that have it enabled.
 .EXAMPLE
   Remove-SMBv1DomainWide
-  This finds all computers in the domain and removes the SMBv1 dialect 
+  This finds all computers in the domain and disables the SMBv1 dialect 
   from each of them..
 .EXAMPLE
   Remove-SMBv1DomainWide -ReportOnly
   This finds all computers in the domain and reports on their SMBv1 
   dialect status
+.EXAMPLE
+  Remove-SMBv1DomainWide -EnableSMBv1
+  This finds all computers in the domain, enables SMBv1 and reports 
+  on all computers SMBv1 dialect status
 .NOTES
   General notes
   Created by: Brent Denny
