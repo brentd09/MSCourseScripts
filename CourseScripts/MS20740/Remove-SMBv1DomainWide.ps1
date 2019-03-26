@@ -18,7 +18,8 @@
 #>
 [CmdletBinding()]
 Param (
-  [switch]$ReportOnly
+  [switch]$ReportOnly,
+  [switch]$EnableSMBv1
 )
 try {
   $Computers = Get-AdComputer -filter * -ErrorAction Stop
@@ -26,8 +27,8 @@ try {
     try {
       Invoke-Command -ComputerName $Computer.Name -ErrorAction Stop -ScriptBlock {
         $SMBServerConfig = Get-SmbServerConfiguration
-        if ($SMBServerConfig.EnableSMB1Protocol -eq $true -and $Using:ReportOnly -eq $false) {
-          Set-SmbServerConfiguration -EnableSMB1Protocol $false -Confirm:$false
+        if ($SMBServerConfig.EnableSMB1Protocol -eq (-not $Using:EnableSMBv1) -and $Using:ReportOnly -eq $false) {
+          Set-SmbServerConfiguration -EnableSMB1Protocol $Using:EnableSMBv1 -Confirm:$false
         }
         Get-SmbServerConfiguration
       } | Select-Object -Property @{n='ComputerName';e={$_.PSComputerName}},@{n='SMB1Enabled';e={$_.EnableSMB1Protocol}}
