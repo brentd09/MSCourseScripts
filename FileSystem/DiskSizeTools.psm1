@@ -44,7 +44,7 @@
         $Hash = [ordered]@{
           Size      = $SizeBytes
           Directory = $Dir
-          AllFiles  = $Allfiles
+          Acurate  = $Allfiles
         }
         New-Object -TypeName psobject -Property $Hash
       } # foreach-end
