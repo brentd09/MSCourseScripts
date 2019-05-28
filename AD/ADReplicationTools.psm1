@@ -123,7 +123,7 @@ function Get-ADUpToDatenessVector {
   $AllResults = Get-ADReplicationUpToDatenessVectorTable -Target $ComputerName -Partition $PartitionName | 
                  Sort-Object -Property LastReplicationSuccess -Descending 
   foreach ($Result in $AllResults) {
-    if ($UDV -eq $null) {$UDV += $Result}
+    if (-not $UDV) {$UDV += $Result}
     elseif ($UDV.Partition -notcontains $Result.Partition) {$UDV += $Result} 
   }
   $UDV
