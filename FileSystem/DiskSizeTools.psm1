@@ -9,10 +9,11 @@
     command will show if there have been any issues with permissions and show up as
     false in the Acurate property.
   .EXAMPLE
-    Get-DiskUsage -Path 'C:\Windows' -Units 'KB'
+    Get-DiskUsage -Path 'C:\Windows' -Units 'GB'
     This will look for directories directly under the C:\Windows directory and then add
-    up all of the file sizes each directory as a grand total of bytes used. 
-    You have an option to display the size in different units KB, MB, GB.
+    up all of the file sizes for each sub-directory as a total of bytes used under that
+    sub-directory. You also have an option to display the size used in different units
+    KB, MB, GB, the default is KB.
   .PARAMETER Path
     This needs to be a directory path and this path also need to have subdirectories in
     it for this command to operate correctly
@@ -28,26 +29,26 @@
   Param (
     [string]$Path = (Get-Location).Path,
     [ValidateSet('KB','MB','GB')]
-    [string]$Units = 'MB'
+    [string]$Units = 'KB'
   )
 
   try {
     if (Test-Path -Path $Path -PathType Container) {
-      $Directories = (Get-ChildItem -Path $Path -Directory -ErrorAction stop).FullName
+      $SubDirectories = (Get-ChildItem -Path $Path -Directory -ErrorAction stop).FullName
     }
     else {
       Write-Warning "$Path - is not a directory"
       break
     }
-    if ($Directories.Count -gt 0) {
-      foreach ($Dir in $Directories) {
+    if ($SubDirectories.Count -gt 0) {
+      foreach ($SubDir in $SubDirectories) {
         try {
-        $SizeBytes = (Get-ChildItem $Dir -file -Recurse -ErrorAction stop | 
+        $SizeBytes = (Get-ChildItem $SubDir -file -Recurse -ErrorAction stop | 
          Measure-Object -Property Length -Sum).Sum
         $Allfiles = $true 
         }
         catch {
-          $SizeBytes = (Get-ChildItem $Dir -file -Recurse -ErrorAction SilentlyContinue | 
+          $SizeBytes = (Get-ChildItem $SubDir -file -Recurse -ErrorAction SilentlyContinue | 
            Measure-Object -Property Length -Sum).Sum
           $Allfiles = $false
         } 
@@ -55,8 +56,8 @@
         $SizeName = 'Size('+$Units+')'
         $DivideBy = '1'+$Units
         $Hash = [ordered]@{
-          ParentPath = $Dir -replace '^(.*)\\.*$','$1'
-          Directory = $Dir  -replace '^.*\\(.*)$','$1'
+          ParentPath = $SubDir -replace '^(.*)\\.*$','$1'
+          Directory = $SubDir  -replace '^.*\\(.*)$','$1'
           Size = $SizeBytes
           $SizeName  = [math]::Round($SizeBytes / $DivideBy,1)
           Acurate  = $Allfiles
