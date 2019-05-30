@@ -1,4 +1,28 @@
 ﻿function Set-GPOStagedChange {
+  <#
+  .SYNOPSIS
+    Creates a staging GPO for change control
+  .DESCRIPTION
+    This command will create a new (staged) GPO from a copy of one that you specify and will
+    link it to the OU you specify, it will change its priority to be the highest priority 
+    and it will remove all other Apply permissions and add the Apply permission only to a 
+    group that you specify.
+    You can specify the original OU where the current GPO is linked or you can specify a testing OU 
+    where you have less chance of creating havoc with the production users and computers.
+    This command also employs dynamic paramters so that intellisense will locate and list off of the 
+    objects related to the parameter you type.
+  .EXAMPLE
+    Set-GPOStagedChange -GPOName ITGpo -OUDistinguishedName 'ou=IT,dc=adatum,dc=com' -TestingGroup GPOTesters
+    This will create a new GPO called ITGpoStaged and link it to the IT OU specified it will then change the 
+    permissions on the link so that only the GPOTesters group will be applied the settings and it will set the 
+    priority of this new GPO to be the highest priority on this OU
+  .NOTES
+    General notes
+      Created By: Brent Denny
+      Created On: 30-May-2019
+    This script was the response to a question asked in a Microsoft Identity course regarding change control and
+    staged testing of new GPO settings before releasing those new settings to production.  
+  #>
   [CmdletBinding()]
   Param ()
 
@@ -85,6 +109,9 @@
       Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
       Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace
     }
-  }
-}
+    else {
+      Write-Warning "There is an existing GPO with the name of $GPOStagingName, you will need to remove this from the Group Policy Objects before running this command again"
+    } # end - if-else
+  } # end - process block
+} # end - function
 
