@@ -118,4 +118,6 @@
 #  $GPOString = Get-ADObject -Filter * -Properties gplink | Where-Object {$_.GpLink}
 #  $regex = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'
 #  $Guids = ([RegEx]::Matches($GPOString,$regex)).Value
+#  [Array]::Reverse($Guids)
 #  Get-GPO -all | Select-Object -Property DisplayName,Id
+#  $Guids.Indexof(guidnumber)
