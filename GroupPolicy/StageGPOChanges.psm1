@@ -100,14 +100,21 @@
 
     write-verbose "GPO - $GPOName , OU - $OUDistinguishedName , Grp - $TestingGroup , StagedGPO - $GPOStagingName"
 
-    $CurrentGPO = Get-GPO -all | Where-Object {$_.DisplayName -eq $GPOName}
+    $SelectedGPO = Get-GPO -all | Where-Object {$_.DisplayName -eq $GPOName}
+    $SelectedOU  = Get-ADOrganizationalUnit -Identity $OUDistinguishedName -Properties *
     [array]$StagedGPO = Get-GPO -all | Where-Object {$_.DisplayName -eq $GPOStagingName}
     if ($StagedGPO.count -eq 0 ) {
-      $CurrentGPO | Copy-GPO -TargetName $GPOStagingName 
-      New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName
-      Set-GPLink -Name $GPOStagingName -Order 1 -Target $OUDistinguishedName
-      Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
-      Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace
+      $SelectedGPO | Copy-GPO -TargetName $GPOStagingName 
+      $OUWithGPOs = Get-ADObject -Filter * -Properties * | Where-Object {$_.GPLink}
+      if ($SelectedOU.GPLink -match $SelectedGPO.Id.Guid) {
+
+      }
+      else {
+        New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName
+        Set-GPLink -Name $GPOStagingName -Order 1 -Target $OUDistinguishedName
+        Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
+        Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace
+      }  
     }
     else {
       Write-Warning "There is an existing GPO with the name of $GPOStagingName, you will need to remove this from the Group Policy Objects before running this command again"
@@ -115,7 +122,7 @@
   } # end - process block
 } # end - function
 
-#  $GPOString = Get-ADObject -Filter * -Properties gplink | Where-Object {$_.GpLink}
+#  $OUWithGPOs = Get-ADObject -Filter * -Properties LinkedGroupPolicyObjects | Where-Object {$_.LinkedGroupPolicyObjects.Count -gt 0}
 #  $regex = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'
 #  $Guids = ([RegEx]::Matches($GPOString,$regex)).Value
 #  [Array]::Reverse($Guids)
