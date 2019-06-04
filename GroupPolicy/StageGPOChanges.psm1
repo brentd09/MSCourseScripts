@@ -120,15 +120,23 @@
       }
       # $OUWithGPOs = Get-ADObject -Filter * -Properties * | Where-Object {$_.GPLink}
       if ($SelectedOU.GPLink -match $SelectedGPO.Id.Guid) {  # OU chosen has the selected GPO linked
-        $GpLinks = $SelectedGPO.GPLink
+        $GpLinks = $SelectedOU.GPLink
         $RegEx   = '[a-fA-F0-9]{8}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{12}'
-        $GpGuids = [regex]::Matches($GpLinks,$RegEx).Value
-        [array]::Reverse($GpGuids)
-        $TestGpoOrder = $GpGuids.Indexof($SelectedGPO.Id.Guid)
+        $GpLinkGuids = [regex]::Matches($GpLinks,$RegEx).Value
+        [array]::Reverse($GpLinkGuids)
+        $GuidCount = 1
+        $GpLinkGuids | ForEach-Object {
+          if ($_ -eq  $SelectedGPO.Id.Guid) {
+            $TestGpoOrder = $GuidCount
+          }
+          $GuidCount++
+        }
       }
       else {  # OU Chosen doen not have the selected GPO linked
         $TestGpoOrder = 1
       }
+      Write-Verbose "TestGpoOrder - $TestGpoOrder , GPLinkGuids - $GpLinkGuids"
+       
       New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName
       Set-GPLink -Name $GPOStagingName -Order $TestGpoOrder -Target $OUDistinguishedName
       Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
