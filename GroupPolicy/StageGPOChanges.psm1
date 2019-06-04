@@ -124,13 +124,7 @@
         $RegEx   = '[a-fA-F0-9]{8}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{12}'
         $GpLinkGuids = [regex]::Matches($GpLinks,$RegEx).Value
         [array]::Reverse($GpLinkGuids)
-        $GuidCount = 1
-        $GpLinkGuids | ForEach-Object {
-          if ($_ -eq  $SelectedGPO.Id.Guid) {
-            $TestGpoOrder = $GuidCount
-          } # end - if
-          $GuidCount++
-        } #end - foreach
+        $TestGpoOrder = ($GpLinkGuids.toUpper().indexOf($SelectedGPO.Id.Guid.toUpper()) + 1)
       } #end - if
       else {  # OU Chosen doen not have the selected GPO linked
         $TestGpoOrder = 1
