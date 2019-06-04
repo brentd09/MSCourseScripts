@@ -3,14 +3,21 @@
   .SYNOPSIS
     Creates a staging GPO for change control
   .DESCRIPTION
-    This command will create a new (staged) GPO from a copy of one that you specify and will
-    link it to the OU you specify, it will change its priority to be the highest priority 
-    and it will remove all other Apply permissions and add the Apply permission only to a 
-    group that you specify.
-    You can specify the original OU where the current GPO is linked or you can specify a testing OU 
-    where you have less chance of creating havoc with the production users and computers.
-    This command also employs dynamic paramters so that intellisense will locate and list off of the 
-    objects related to the parameter you type.
+    This command will help you stage settings for a GPO so that you can test those settings before making
+    changes to the general production environment.
+    From the command line you will specify a GPO that you wish to edit, an OU that you wish the test to be
+    conducted from and a AD security group to which the "test GPO" will be security filtered. The "test GPO" is 
+    automatically created by this command and linked to the OU your specify and will be security filtered 
+    to the group mentioned earlier.
+    If the GPO you specified is linked to the OU you specified, then the "test GPO" will be linked to that OU 
+    and will be given a higher priority than the original GPO you specified. 
+    If the GPO is not linked to the OU you specified then the "test GPO" will be linked to the OU and the 
+    GPO priority will be set to the highest on that OU.
+    This gives you the oppotunity to have the "test GPO" linked to either the original OU or to a test OU.
+    After this is done you can then edit the "test GPO" and audit the results as those that were in the 
+    security group login and experience the new GPO settings you are considering.
+    The name of the "test GPO" will be the specified GPO name 2 underscores and the word Staged 
+    for example: If the specified GPO was SalesGPO then the test GPO name = "SalesGPO__Staged"
   .EXAMPLE
     Set-GPOStagedChange -GPOName ITGpo -OUDistinguishedName 'ou=IT,dc=adatum,dc=com' -TestingGroup GPOTesters
     This will create a new GPO called ITGpoStaged and link it to the IT OU specified it will then change the 
@@ -96,7 +103,7 @@
     $GPOName             = $PSBoundParameters[$ParamName_GPO]
     $OUDistinguishedName = $PSBoundParameters[$ParamName_OU]
     $TestingGroup        = $PSBoundParameters[$ParamName_Group]
-    $GPOStagingName = $GPOName +'Staged'
+    $GPOStagingName = $GPOName +'__Staged'
 
     write-verbose "GPO - $GPOName , OU - $OUDistinguishedName , Grp - $TestingGroup , StagedGPO - $GPOStagingName"
 
@@ -104,27 +111,31 @@
     $SelectedOU  = Get-ADOrganizationalUnit -Identity $OUDistinguishedName -Properties *
     [array]$StagedGPO = Get-GPO -all | Where-Object {$_.DisplayName -eq $GPOStagingName}
     if ($StagedGPO.count -eq 0 ) {
-      $SelectedGPO | Copy-GPO -TargetName $GPOStagingName 
-      $OUWithGPOs = Get-ADObject -Filter * -Properties * | Where-Object {$_.GPLink}
-      if ($SelectedOU.GPLink -match $SelectedGPO.Id.Guid) {
-
+      try {
+        $SelectedGPO | Copy-GPO -TargetName $GPOStagingName -ErrorAction Stop
       }
-      else {
-        New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName
-        Set-GPLink -Name $GPOStagingName -Order 1 -Target $OUDistinguishedName
-        Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
-        Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace
-      }  
+      catch {
+        Write-Warning "Problem creating the staged copy of the GPO. Check if $GPOStagingName already exists in Group Policy"
+        break
+      }
+      # $OUWithGPOs = Get-ADObject -Filter * -Properties * | Where-Object {$_.GPLink}
+      if ($SelectedOU.GPLink -match $SelectedGPO.Id.Guid) {  # OU chosen has the selected GPO linked
+        $GpLinks = $SelectedGPO.GPLink
+        $RegEx   = '[a-fA-F0-9]{8}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{12}'
+        $GpGuids = [regex]::Matches($GpLinks,$RegEx).Value
+        [array]::Reverse($GpGuids)
+        $TestGpoOrder = $GpGuids.Indexof($SelectedGPO.Id.Guid)
+      }
+      else {  # OU Chosen doen not have the selected GPO linked
+        $TestGpoOrder = 1
+      }
+      New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName
+      Set-GPLink -Name $GPOStagingName -Order $TestGpoOrder -Target $OUDistinguishedName
+      Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
+      Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace
     }
     else {
       Write-Warning "There is an existing GPO with the name of $GPOStagingName, you will need to remove this from the Group Policy Objects before running this command again"
     } # end - if-else
   } # end - process block
 } # end - function
-
-#  $OUWithGPOs = Get-ADObject -Filter * -Properties LinkedGroupPolicyObjects | Where-Object {$_.LinkedGroupPolicyObjects.Count -gt 0}
-#  $regex = '[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}'
-#  $Guids = ([RegEx]::Matches($GPOString,$regex)).Value
-#  [Array]::Reverse($Guids)
-#  Get-GPO -all | Select-Object -Property DisplayName,Id
-#  $Guids.Indexof(guidnumber)
