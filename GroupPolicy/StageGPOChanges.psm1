@@ -1,4 +1,4 @@
-﻿function Set-GPOStagedChange {
+﻿function New-StagedGPO {
   <#
   .SYNOPSIS
     Creates a staging GPO for change control
@@ -16,13 +16,14 @@
     This gives you the oppotunity to have the "test GPO" linked to either the original OU or to a test OU.
     After this is done you can then edit the "test GPO" and audit the results as those that were in the 
     security group login and experience the new GPO settings you are considering.
-    The name of the "test GPO" will be the specified GPO name 2 underscores and the word Staged 
-    for example: If the specified GPO was SalesGPO then the test GPO name = "SalesGPO__Staged"
+    The name of the "test GPO" will be as follows 
+    for example: If the specified GPO was SalesGPO then the "test GPO" name will be "SalesGPO_Staged_ForTesting"
   .EXAMPLE
-    Set-GPOStagedChange -GPOName ITGpo -OUDistinguishedName 'ou=IT,dc=adatum,dc=com' -TestingGroup GPOTesters
-    This will create a new GPO called ITGpoStaged and link it to the IT OU specified it will then change the 
-    permissions on the link so that only the GPOTesters group will be applied the settings and it will set the 
-    priority of this new GPO to be the highest priority on this OU
+    New-StagedGPO -GPOName ITGpo -OUDistinguishedName 'ou=IT,dc=adatum,dc=com' -TestingGroup GPOTesters
+    This will create a new GPO called ITGpo_Staged_ForTesting and link it to the IT OU specified, it will then change the 
+    security filtering on the link so that only the GPOTesters group will be targeted by the GPO and the 
+    priority of this new GPO will be set to be either a higher prority than the original GPO if in the same OU or the 
+    highest priority if it has been linked to a special testOU.
   .NOTES
     General notes
       Created By: Brent Denny
@@ -32,9 +33,7 @@
   #>
   [CmdletBinding()]
   Param ()
-
-  DynamicParam {
-  
+  DynamicParam { 
      # Set the dynamic parameters' name
      $ParamName_OU = 'OUDistinguishedName'
      # Create the collection of attributes
@@ -56,7 +55,6 @@
      $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_OU, [string], $AttributeCollection)
      $RuntimeParameterDictionary.Add($ParamName_OU, $RuntimeParameter)
   
-     
      # Set the dynamic parameters' name
      $ParamName_GPO = 'GPOName'
      # Create the collection of attributes
@@ -100,10 +98,11 @@
 
   
   process {
+    #using Dynamic params
     $GPOName             = $PSBoundParameters[$ParamName_GPO]
     $OUDistinguishedName = $PSBoundParameters[$ParamName_OU]
     $TestingGroup        = $PSBoundParameters[$ParamName_Group]
-    $GPOStagingName = $GPOName +'__Staged'
+    $GPOStagingName = $GPOName +'_Staged_ForTesting'
 
     write-verbose "GPO - $GPOName , OU - $OUDistinguishedName , Grp - $TestingGroup , StagedGPO - $GPOStagingName"
 
@@ -112,12 +111,13 @@
     [array]$StagedGPO = Get-GPO -all | Where-Object {$_.DisplayName -eq $GPOStagingName}
     if ($StagedGPO.count -eq 0 ) {
       try {
-        $SelectedGPO | Copy-GPO -TargetName $GPOStagingName -ErrorAction Stop
-      }
+        Write-Verbose "Attempting to copy the GPO to the testing GPO"
+        $SelectedGPO | Copy-GPO -TargetName $GPOStagingName -ErrorAction Stop *> $null
+      } # end - try
       catch {
         Write-Warning "Problem creating the staged copy of the GPO. Check if $GPOStagingName already exists in Group Policy"
         break
-      }
+      } # end - catch
       # $OUWithGPOs = Get-ADObject -Filter * -Properties * | Where-Object {$_.GPLink}
       if ($SelectedOU.GPLink -match $SelectedGPO.Id.Guid) {  # OU chosen has the selected GPO linked
         $GpLinks = $SelectedOU.GPLink
@@ -128,20 +128,27 @@
         $GpLinkGuids | ForEach-Object {
           if ($_ -eq  $SelectedGPO.Id.Guid) {
             $TestGpoOrder = $GuidCount
-          }
+          } # end - if
           $GuidCount++
-        }
-      }
+        } #end - foreach
+      } #end - if
       else {  # OU Chosen doen not have the selected GPO linked
         $TestGpoOrder = 1
-      }
+      } # end - else
       Write-Verbose "TestGpoOrder - $TestGpoOrder , GPLinkGuids - $GpLinkGuids"
-       
-      New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName
-      Set-GPLink -Name $GPOStagingName -Order $TestGpoOrder -Target $OUDistinguishedName
-      Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace
-      Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace
-    }
+      try { 
+        Write-Verbose "Attempting to link the new GPO to the OU"
+        New-GPLink -Name $GPOStagingName -Target $OUDistinguishedName -ErrorAction stop *> $null
+        Write-Verbose "Attempting to set the priority order of the new GPO"
+        Set-GPLink -Name $GPOStagingName -Order $TestGpoOrder -Target $OUDistinguishedName -ErrorAction stop *> $null
+        Write-Verbose "Attempting to set the security filtering by removing Authenticated Users and adding $TestingGroup"
+        Set-GPPermission -Name $GPOStagingName -TargetName $TestingGroup -PermissionLevel 'GpoApply' -TargetType 'Group' -Replace -ErrorAction stop *> $null
+        Set-GPPermission -Name $GPOStagingName -TargetName 'Authenticated Users' -PermissionLevel 'None' -TargetType 'Group' -Replace -ErrorAction stop *> $null
+      } # end - try
+      catch {
+        Write-Warning "There was an issue setting up the staged GPO"
+      } #end - catch
+    } # end - if
     else {
       Write-Warning "There is an existing GPO with the name of $GPOStagingName, you will need to remove this from the Group Policy Objects before running this command again"
     } # end - if-else
