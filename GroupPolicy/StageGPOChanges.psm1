@@ -1,5 +1,4 @@
-﻿
-function New-StagedGPO {
+﻿function New-StagedGPO {
   #Requires -modules GroupPolicy, ActiveDirectory
   <#
   .SYNOPSIS
