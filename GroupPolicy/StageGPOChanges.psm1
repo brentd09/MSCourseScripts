@@ -1,4 +1,6 @@
-﻿function New-StagedGPO {
+﻿
+function New-StagedGPO {
+  #Requires -modules ActiveDirectory
   <#
   .SYNOPSIS
     Creates a staging GPO for change control
@@ -31,6 +33,7 @@
     This script was the response to a question asked in a Microsoft Identity course regarding change control and
     staged testing of new GPO settings before releasing those new settings to production.  
   #>
+
   [CmdletBinding()]
   Param ()
   DynamicParam { 
