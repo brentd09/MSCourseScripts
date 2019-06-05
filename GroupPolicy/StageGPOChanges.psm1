@@ -1,6 +1,6 @@
 ﻿
 function New-StagedGPO {
-  #Requires -modules ActiveDirectory
+  #Requires -modules GroupPolicy, ActiveDirectory
   <#
   .SYNOPSIS
     Creates a staging GPO for change control
