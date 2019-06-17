@@ -42,70 +42,68 @@
   [CmdletBinding()]
   Param ()
   DynamicParam { 
-     $ADModule = Get-Module -ListAvailable | Where-Object {$_.Name -in @('ActiveDirectory','GroupPolicy')}
-     if ($ADModule.Count -lt 2) {
+    $ADModule = Get-Module -ListAvailable | Where-Object {$_.Name -in @('ActiveDirectory','GroupPolicy')}
+    if ($ADModule.Count -lt 2) {
       Write-Warning "You need to run this on a machine that has access to the ActiveDirectory and GroupPolicy modules"
       break
-      }
-     # Set the dynamic parameters' name
-     $ParamName_OU = 'OUDistinguishedName'
-     # Create the collection of attributes
-     $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-     # Create and set the parameters' attributes
-     $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-     $ParameterAttribute.Mandatory = $true
-     $ParameterAttribute.Position = 1
-     # Add the attributes to the attributes collection
-     $AttributeCollection.Add($ParameterAttribute) 
-     # Create the dictionary 
-     $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-     # Generate and set the ValidateSet 
-     $arrSet = (Get-ADOrganizationalUnit -Filter *).distinguishedname
-     $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)    
-     # Add the ValidateSet to the attributes collection
-     $AttributeCollection.Add($ValidateSetAttribute)
-     # Create and return the dynamic parameter
-     $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_OU, [string], $AttributeCollection)
-     $RuntimeParameterDictionary.Add($ParamName_OU, $RuntimeParameter)
-  
-     # Set the dynamic parameters' name
-     $ParamName_GPO = 'GPOName'
-     # Create the collection of attributes
-     $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-     # Create and set the parameters' attributes
-     $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-     $ParameterAttribute.Mandatory = $true
-     $ParameterAttribute.Position = 2
-     # Add the attributes to the attributes collection
-     $AttributeCollection.Add($ParameterAttribute)  
-     # Generate and set the ValidateSet 
-     $arrSet = (Get-GPO -all).DisplayName
-     $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-     # Add the ValidateSet to the attributes collection
-     $AttributeCollection.Add($ValidateSetAttribute)
-     # Create and return the dynamic parameter
-     $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_GPO, [string], $AttributeCollection)
-     $RuntimeParameterDictionary.Add($ParamName_GPO, $RuntimeParameter)
-
-     # Set the dynamic parameters' name
-     $ParamName_Group = 'TestingGroup'
-     # Create the collection of attributes
-     $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-     # Create and set the parameters' attributes
-     $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-     $ParameterAttribute.Mandatory = $true
-     $ParameterAttribute.Position = 3
-     # Add the attributes to the attributes collection
-     $AttributeCollection.Add($ParameterAttribute)  
-     # Generate and set the ValidateSet 
-     $arrSet = (Get-ADGroup -Filter *).Name
-     $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-     # Add the ValidateSet to the attributes collection
-     $AttributeCollection.Add($ValidateSetAttribute)
-     # Create and return the dynamic parameter
-     $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_Group, [string], $AttributeCollection)
-     $RuntimeParameterDictionary.Add($ParamName_Group, $RuntimeParameter)
-     return $RuntimeParameterDictionary
+    }
+    # Set the dynamic parameters' name
+    $ParamName_OU = 'OUDistinguishedName'
+    # Create the collection of attributes
+    $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+    # Create and set the parameters' attributes
+    $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+    $ParameterAttribute.Mandatory = $true
+    $ParameterAttribute.Position = 1
+    # Add the attributes to the attributes collection
+    $AttributeCollection.Add($ParameterAttribute) 
+    # Create the dictionary 
+    $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+    # Generate and set the ValidateSet 
+    $arrSet = (Get-ADOrganizationalUnit -Filter *).distinguishedname
+    $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)    
+    # Add the ValidateSet to the attributes collection
+    $AttributeCollection.Add($ValidateSetAttribute)
+    # Create and return the dynamic parameter
+    $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_OU, [string], $AttributeCollection)
+    $RuntimeParameterDictionary.Add($ParamName_OU, $RuntimeParameter)
+      # Set the dynamic parameters' name
+    $ParamName_GPO = 'GPOName'
+    # Create the collection of attributes
+    $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+    # Create and set the parameters' attributes
+    $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+    $ParameterAttribute.Mandatory = $true
+    $ParameterAttribute.Position = 2
+    # Add the attributes to the attributes collection
+    $AttributeCollection.Add($ParameterAttribute)  
+    # Generate and set the ValidateSet 
+    $arrSet = (Get-GPO -all).DisplayName
+    $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+    # Add the ValidateSet to the attributes collection
+    $AttributeCollection.Add($ValidateSetAttribute)
+    # Create and return the dynamic parameter
+    $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_GPO, [string], $AttributeCollection)
+    $RuntimeParameterDictionary.Add($ParamName_GPO, $RuntimeParameter)
+    # Set the dynamic parameters' name
+    $ParamName_Group = 'TestingGroup'
+    # Create the collection of attributes
+    $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+    # Create and set the parameters' attributes
+    $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+    $ParameterAttribute.Mandatory = $true
+    $ParameterAttribute.Position = 3
+    # Add the attributes to the attributes collection
+    $AttributeCollection.Add($ParameterAttribute)  
+    # Generate and set the ValidateSet 
+    $arrSet = (Get-ADGroup -Filter *).Name
+    $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+    # Add the ValidateSet to the attributes collection
+    $AttributeCollection.Add($ValidateSetAttribute)
+    # Create and return the dynamic parameter
+    $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_Group, [string], $AttributeCollection)
+    $RuntimeParameterDictionary.Add($ParamName_Group, $RuntimeParameter)
+    return $RuntimeParameterDictionary
   } # End - DynamicParams
 
   
