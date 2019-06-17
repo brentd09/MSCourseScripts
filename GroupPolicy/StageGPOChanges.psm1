@@ -25,17 +25,28 @@
     security filtering on the link so that only the GPOTesters group will be targeted by the GPO and the 
     priority of this new GPO will be set to be either a higher prority than the original GPO if in the same OU or the 
     highest priority if it has been linked to a special testOU.
+  .PARAMETER OUDistinguishedName
+    This paramter tells the command which OU you wish to have the staging GPO linked to. This parameter is dynamic
+    intellisense can be used to choose the OU from the commandline.
+  .PARAMETER GPOName
+    This is the GPO that will be copied and security filtered and then linked to the GPO so that the 
+    staged testing of any new chages can take place. This parameter is dynamic
+  .PARAMETER TestingGroup
+    This is the group that the staging GPO will be security filtered to. This parameter is dynamic.
   .NOTES
     General notes
       Created By: Brent Denny
       Created On: 30-May-2019
-    This script was the response to a question asked in a Microsoft Identity course regarding change control and
-    staged testing of new GPO settings before releasing those new settings to production.  
   #>
 
   [CmdletBinding()]
   Param ()
   DynamicParam { 
+     $ADModule = Get-Module -ListAvailable | Where-Object {$_.Name -in @('ActiveDirectory','GroupPolicy')}
+     if ($ADModule.Count -lt 2) {
+      Write-Warning "You need to run this on a machine that has access to the ActiveDirectory and GroupPolicy modules"
+      break
+      }
      # Set the dynamic parameters' name
      $ParamName_OU = 'OUDistinguishedName'
      # Create the collection of attributes
@@ -94,7 +105,6 @@
      # Create and return the dynamic parameter
      $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParamName_Group, [string], $AttributeCollection)
      $RuntimeParameterDictionary.Add($ParamName_Group, $RuntimeParameter)
-
      return $RuntimeParameterDictionary
   } # End - DynamicParams
 
@@ -120,7 +130,6 @@
         Write-Warning "Problem creating the staged copy of the GPO. Check if $GPOStagingName already exists in Group Policy"
         break
       } # end - catch
-      # $OUWithGPOs = Get-ADObject -Filter * -Properties * | Where-Object {$_.GPLink}
       if ($SelectedOU.GPLink -match $SelectedGPO.Id.Guid) {  # OU chosen has the selected GPO linked
         $GpLinks = $SelectedOU.GPLink
         $RegEx   = '[a-fA-F0-9]{8}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{4}\-[a-fA-F0-9]{12}'
