@@ -1,11 +1,11 @@
-function Get-GpRSOP {
+﻿function Get-GPOProcess {
   <#
   .SYNOPSIS
     Shows all policies that applied to a set of computers
   .DESCRIPTION
     Lists user and computer policies that apply to one or more computers
   .EXAMPLE
-    Get-GpRSOP -ComputerName LON-CL1,LON-CL2,LON-CL3
+    Get-GPOProcess -ComputerName LON-CL1,LON-CL2,LON-CL3
     This command gets the RSOP information from GPResult and stores it in 
     XML files in the $Env:TEMP directory and then extracts the policy info
     from these XML result files to produce an object that shows the policies
@@ -29,15 +29,15 @@ function Get-GpRSOP {
         Write-Warning "The XML file $XMLFilePAth exists, skipping $Computer, delete file manually and retry"
         throw
       } #END if
-      GPResult -S $ComputerName -x $XMLFilePath
+      GPResult -S $Computer -x $XMLFilePath
       [xml]$GPOResultXML = get-content $XMLFilePath
       if (Test-Path $XMLFilePath) {Remove-Item $XMLFilePath -force}
-      $ComputerRSOP = $GPOResultXML.Rsop.ComputerResults.GPO.Name 
-      $UserRSOP     = $GPOResultXML.Rsop.UserResults.GPO.Name 
+      $ComputerRSOP = $GPOResultXML.Rsop.computerresults.EventsDetails.SinglePassEventsDetails.EventRecord.eventdescription -join "`n"
+      $UserRSOP     = $GPOResultXML.Rsop.userresults.EventsDetails.SinglePassEventsDetails.EventRecord.eventdescription -join "`n"
       $ObjectProperties = [ordered]@{
         ComputerName     = $Computer
-        UserPolicies     = $UserRSOP
-        ComputerPolicies = $ComputerRSOP
+        UserGPOProcess     = $UserRSOP
+        ComputerGPOProcess = $ComputerRSOP
       } #END Hashtable
       New-Object -TypeName psobject -Property $ObjectProperties
     } #END try
