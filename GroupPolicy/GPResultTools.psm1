@@ -29,8 +29,8 @@
         Write-Warning "The XML file $XMLFilePAth exists, skipping $Computer, delete file manually and retry"
         throw
       } #END if
-      GPResult -S $Computer -x $XMLFilePath
-      [xml]$GPOResultXML = get-content $XMLFilePath
+      GPResult -S $Computer -x $XMLFilePath *> $null
+      [xml]$GPOResultXML = get-content $XMLFilePath 
       if (Test-Path $XMLFilePath) {Remove-Item $XMLFilePath -force}
       $ComputerRSOP = $GPOResultXML.Rsop.computerresults.EventsDetails.SinglePassEventsDetails.EventRecord.eventdescription -join "`n"
       $UserRSOP     = $GPOResultXML.Rsop.userresults.EventsDetails.SinglePassEventsDetails.EventRecord.eventdescription -join "`n"
