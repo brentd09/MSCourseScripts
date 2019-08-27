@@ -5,11 +5,13 @@
   .DESCRIPTION
     Lists user and computer policies that apply to one or more computers
   .EXAMPLE
-    Get-GPOProcess -ComputerName LON-CL1,LON-CL2,LON-CL3
+    Get-GPOProcess -ComputerName LON-CL1,LON-CL2,LON-CL3 | Format-List
     This command gets the RSOP information from GPResult and stores it in 
     XML files in the $Env:TEMP directory and then extracts the policy info
     from these XML result files to produce an object that shows the full 
-    policy process that was applied to the computer and user.
+    policy process that was applied to the computer and user. 
+    The Format-List format is best to see the contents of the properties
+
     The results look like this:
     ---------------------------
     Starting user logon Policy processing for INSTRUCTOR\Administrator. 
