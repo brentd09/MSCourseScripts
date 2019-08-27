@@ -43,7 +43,8 @@
   #>
   [cmdletbinding()]
   Param (
-    [string[]]$ComputerName = @('localhost')
+    [string[]]$ComputerName = @('localhost'),
+    [string]$UserName = 'ddls22\administrator'
   )
   foreach ($Computer in $ComputerName){
     $XMLFilePath = $env:TEMP + '\' + $computer + '-GPOResults.xml'
@@ -53,11 +54,11 @@
         Write-Warning "The XML file $XMLFilePAth exists, skipping $Computer, delete file manually and retry"
         throw
       } #END if
-      GPResult -S $Computer -x $XMLFilePath *> $null
+      GPResult -scope 'computer' -S $Computer -x $XMLFilePath -user $UserName
       [xml]$GPOResultXML = get-content $XMLFilePath 
       if (Test-Path $XMLFilePath) {Remove-Item $XMLFilePath -force}
-      $ComputerRSOP = $GPOResultXML.Rsop.computerresults.EventsDetails.SinglePassEventsDetails.EventRecord.eventdescription -join "`n"
-      $UserRSOP     = $GPOResultXML.Rsop.userresults.EventsDetails.SinglePassEventsDetails.EventRecord.eventdescription -join "`n"
+      $ComputerRSOP = $GPOResultXML.Rsop.computerresults.GPO.Name -join "`n"
+      $UserRSOP     = $GPOResultXML.Rsop.userresults.GPO.Name -join "`n"
       $ObjectProperties = [ordered]@{
         ComputerName     = $Computer
         UserGPOProcess     = $UserRSOP
