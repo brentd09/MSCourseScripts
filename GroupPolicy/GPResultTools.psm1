@@ -44,7 +44,7 @@
   [cmdletbinding()]
   Param (
     [string[]]$ComputerName = @('localhost'),
-    [string]$UserName = 'ddls22\administrator'
+    [string]$UserName = 'administrator'
   )
   foreach ($Computer in $ComputerName){
     $XMLFilePath = $env:TEMP + '\' + $computer + '-GPOResults.xml'
