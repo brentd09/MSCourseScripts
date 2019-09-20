@@ -1,6 +1,6 @@
 [DscLocalConfigurationManager()]
 Configuration SetLCMToReapplyIfNotCompliant {
-  Param ([string]$ComputerName)
+  Param ([string]$ComputerName = 'LON-DC1')
   node $ComputerName {
     Settings {
       ConfigurationMode = 'ApplyAndAutoCorrect'
@@ -8,6 +8,6 @@ Configuration SetLCMToReapplyIfNotCompliant {
   }
 }
 
-SetLCMToReapplyIfNotCompliant
+SetLCMToReapplyIfNotCompliant -ComputerName Server6
 
 Set-DscLocalConfigurationManager -Path .\SetLCMToReapplyIfNotCompliant
