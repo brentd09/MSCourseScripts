@@ -1,6 +1,6 @@
 Configuration DeployWebServer {
   Param (
-    [string]$ComputerName,
+    [string]$ComputerName = 'LON-DC1',
     [string]$SourcePath = '\\LON-DC1\WebContent',
     [string]$DestinationPath = 'c:\inetpub\wwwroot'
   )
@@ -11,7 +11,7 @@ Configuration DeployWebServer {
     }
 
     File CopyWebSite {
-      Ensure          =  'Present'
+      Ensure          = 'Present'
       SourcePath      = $SourcePath
       DestinationPath = $DestinationPath
       Recurse         = $true
@@ -22,6 +22,6 @@ Configuration DeployWebServer {
   }
 }
 
-DeployWebServer
+DeployWebServer -ComputerName Server6 
 
 Start-DscConfiguration -Wait -Force -Verbose -Path .\DeployWebServer
