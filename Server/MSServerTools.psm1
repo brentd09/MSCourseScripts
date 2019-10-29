@@ -61,9 +61,7 @@ function Get-ComputerUptime {
     [ipaddress]$IPObj = $RevIPArray -join '.'
     $IPObj | Select-Object -Property @{n='RevIPValue';e={$_.Address}}
   }
-  $IPGood = $false
-  if ((Approve-IP -IP $StartingIP) -and (Approve-IP -IP $EndingIP)) {$IPGood = $true}
-  if ($IPGood -eq $true) {
+  if ((Approve-IP -IP $StartingIP) -and (Approve-IP -IP $EndingIP)) {
     [string[]]$PossibleIPArray = @()
     $StartVal = (Convert-IPToValue -IPAddress $StartingIP).RevIPValue
     $EndVal = (Convert-IPToValue -IPAddress $EndingIP).RevIPValue
@@ -80,7 +78,7 @@ function Get-ComputerUptime {
     foreach ($IPAddress in $PossibleIPArray) {
       $IPCurrentCount++
       $IPTotal = $PossibleIPArray.Count
-      Write-Progress -Activity "Detecting the computer within the IP range $StartingIP - $EndingIP" -PercentComplete ($IPCurrentCount/$IPTotal*100) -CurrentOperation "Detecting $IPAddress"
+      Write-Progress -Activity "Detecting the computers within the IP range $StartingIP - $EndingIP" -PercentComplete ($IPCurrentCount/$IPTotal*100) -CurrentOperation "Detecting $IPAddress ... Please Wait..."
       if (Test-Connection -ComputerName $IPAddress -Quiet -Count 1) {
         $CimOpt = New-CimSessionOption -Protocol w
         $CimSession = New-CimSession -ComputerName $IPAddress -SessionOption $CimOpt
