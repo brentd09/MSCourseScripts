@@ -1,1 +1,0 @@
-Write-host -ForegroundColor Yellow "Hello world!"
