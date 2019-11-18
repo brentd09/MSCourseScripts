@@ -3,7 +3,7 @@
     Get-ADFsmoMasters
 #>
 function Get-ADFsmoMasters {
-  <#
+  <# 
   .Synopsis
     Retrieves the FSMO Role holders
   .DESCRIPTION
