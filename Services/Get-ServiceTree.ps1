@@ -8,13 +8,16 @@ function Find-ServiceTree {
   )    
   $DependentServices = $Service.DependentServices
   foreach ($DependentService in $DependentServices) {
-    Find-ServiceTree -Service $DependentService -Index 0
+    Find-ServiceTree -Service $DependentService -Index $Index
     $ObjHash = [ordered]@{
       Service = $Service.Name
-      DependentService = $DependentService.Name
+      DependentService = $DependentServices.Name
+      Index = $Index
     }
     New-Object -TypeName psobject -Property $ObjHash
+    $Index++
   }
+  
 }
 
 $AllServices = Get-Service 
