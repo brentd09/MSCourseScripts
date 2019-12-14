@@ -3,27 +3,24 @@ Param ([string]$ServiceName = 'SamSS')
 
 function Find-ServiceTree {
   Param (
-    [System.ServiceProcess.ServiceController]$Service,
-    [int]$Index
+    [System.ServiceProcess.ServiceController]$Service
   )    
   $DependentServices = $Service.DependentServices
-  foreach ($DependentService in $DependentServices) {
-    Find-ServiceTree -Service $DependentService -Index $Index
-    $ObjHash = [ordered]@{
-      Service = $Service.Name
-      DependentService = $DependentServices.Name
-      Index = $Index
-    }
-    New-Object -TypeName psobject -Property $ObjHash
-    $Index++
+  $ObjHash = [ordered]@{
+    Service = $Service.ServiceName
+    DependentServiceNames = $DependentServices.ServiceName
   }
-  
+  New-Object -TypeName psobject -Property $ObjHash
+  foreach ($DependentService in $DependentServices) {
+    $DepSvc = Get-Service -Name $DependentService.ServiceName
+    Find-ServiceTree -Service $DepSvc
+  }
 }
 
 $AllServices = Get-Service 
-if ($AllServices.name -contains $ServiceName) {
+if ($AllServices.ServiceName -contains $ServiceName) {
   $ServiceObj = Get-Service -Name $ServiceName
-  Find-ServiceTree -Service $ServiceObj -Index 0
+  Find-ServiceTree -Service $ServiceObj 
 }
 else {Write-Warning "Service $($ServiceName) does not exist"}
 
