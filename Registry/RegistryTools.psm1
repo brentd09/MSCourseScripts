@@ -30,16 +30,29 @@ function Test-RegistryPath {
   if ($Leaf -eq $true) {
     Try {$KeyInfo = Get-ItemProperty -Path (Split-Path -Path $Path) -Name (Split-Path -Leaf -Path $Path) -ErrorAction Stop}
     Catch {}
-    if ($KeyInfo) {$PathTestResult = $true}
+    if ($KeyInfo) {
+      $PathTestResult = $true
+      $ProperyValue = Get-ItemPropertyValue -Path (Split-Path -Path $Path) -Name (Split-Path -Leaf -Path $Path)
+    }
     else {$PathTestResult = $false}
   }
   else {
     $PathTestResult = Test-Path $Path
   }
-  $Hash = [ordered]@{
-    Path   = $Path
-    Exists = $PathTestResult
-    Leaf   = $Leaf
+  if ($Leaf -eq $true) {
+    $Hash = [ordered]@{
+      Path   = $Path
+      Value  = $ProperyValue      
+      Exists = $PathTestResult
+      Leaf   = $Leaf
+    }
+  }
+  else {
+    $Hash = [ordered]@{
+      Path   = $Path
+      Exists = $PathTestResult
+      Leaf   = $Leaf
+    }
   }
   $Obj = New-Object -TypeName psobject -Property $Hash
   return $Obj
