@@ -1,7 +1,7 @@
 ﻿<#
   Functions in this module
     Add-CMNamesToCollection
-    Find-CMObjectCollectionInfo
+    Find-CMDeviceCollectionInfo 
     Get-CMEndPointProtectionStatus
     Compare-AppsInstalled
 #>
@@ -87,7 +87,7 @@ function Add-CMNamesToCollection {
   }
 }
 
-function Find-CMObjectCollectionInfo {
+function Find-CMDeviceCollectionInfo {
   <#
   .SYNOPSIS
      Locates collections and maintenance windows for a device
@@ -99,7 +99,7 @@ function Find-CMObjectCollectionInfo {
   .PARAMETER SiteName
      This is the name of the SCCM site
   .EXAMPLE
-     Find-CMObjectCollectionInfo -DeviceName 'LON-CL1' -SiteName Site_S01
+     Find-CMDeviceCollectionInfo -DeviceName 'LON-CL1' -SiteName Site_S01
      This will check which collections this device is in and will display the collections and
      their corespronding maintenance windows.
   .NOTES
