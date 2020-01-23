@@ -5,7 +5,7 @@
 function Get-ADFsmoMasters {
   <# 
   .Synopsis
-    Retrieves the FSMO Role holders
+    Retrieves the FSMO Role holders.
   .DESCRIPTION
     This command get the FSMO role owners from AD relative to the domain
     controller the script is directed to. If no ADDC is chosen the default
