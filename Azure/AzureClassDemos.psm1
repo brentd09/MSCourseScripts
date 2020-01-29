@@ -25,7 +25,7 @@
   )
   $Cred = Get-Credential -Message "Enter a username and password for the virtual machine."
   New-AzResourceGroup -Name $ResourceGroup -Location $Location
-  foreach ($VM in $VMs) {vnet
+  foreach ($VM in $VMs) {
     $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix
     $vnet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig
     $pip = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4
