@@ -1,4 +1,9 @@
-﻿function Initialize-VNetPair {
+﻿function Initialize-DemoResGrp {
+  $Loc = 'EastUS'
+  $ResGrpName = demoresgroup  
+  New-AzResourceGroup -Name $ResGrpName -Location $Loc 
+}
+function Initialize-DemoVNetPair {
   $Loc = 'EastUS'
   $ResGrpName = demoresgroup
   $Net1 = [ordered]@{
@@ -15,13 +20,15 @@
     SubnetCIDR = '12.3.0.0/24'
   }
   
-  New-AzResourceGroup -Name $ResGrpName -Location $Loc 
+  $ResGroupFound = Get-AzResourceGroup -Name $ResGrpName
+  if ($ResGroupFound.Count -ne 1) {Initialize-DemoResGrp}
+
   $Subnet1 = New-AzVirtualNetworkSubnetConfig -Name $Net1.SubnetName -AddressPrefix $Net1.SubnetCIDR 
   $Subnet2 = New-AzVirtualNetworkSubnetConfig -Name $Net2.SubnetName -AddressPrefix $Net2.SubnetCIDR 
   New-AzVirtualNetwork -Name $Net1.VNetName -ResourceGroupName $ResGrpName -Location $Loc -AddressPrefix $Net1.VnetCIDR -Subnet $Subnet1
   New-AzVirtualNetwork -Name $Net2.VNetName -ResourceGroupName $ResGrpName -Location $Loc -AddressPrefix $Net2.VnetCIDR -Subnet $Subnet2
 }
 
-function Initialize-VMPair {
+function Initialize-DemoVMPair {
   
 }
