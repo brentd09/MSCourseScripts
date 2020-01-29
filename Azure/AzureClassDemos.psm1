@@ -1,60 +1,41 @@
-﻿function Initialize-DemoResGrp {
-  $Loc = 'EastUS'
-  $ResGrpName = 'demoresgroup'
-  New-AzResourceGroup -Name $ResGrpName -Location $Loc 
-}
-function Initialize-DemoVNetPair {
-  $Loc = 'EastUS'
-  $ResGrpName = 'demoresgroup'
-  $Net1 = [ordered]@{
-    VNetName   = 'vnet1'
-    VnetCIDR   = '10.2.0.0/16'
-    SubnetName = 'subnet1'
-    SubnetCIDR = '10.2.0.0/24'
-  }
-  
-  $Net2 = [ordered]@{
-    VNetName   = 'vnet2'
-    VnetCIDR   = '12.3.0.0/16'
-    SubnetName = 'subnet2'
-    SubnetCIDR = '12.3.0.0/24'
-  }
-  
-  $ResGroupFound = Get-AzResourceGroup -Name $ResGrpName
-  if ($ResGroupFound.Count -ne 1) {Initialize-DemoResGrp}
+﻿function Initialize-DemoVMPair {
 
-  $Subnet1 = New-AzVirtualNetworkSubnetConfig -Name $Net1.SubnetName -AddressPrefix $Net1.SubnetCIDR 
-  $Subnet2 = New-AzVirtualNetworkSubnetConfig -Name $Net2.SubnetName -AddressPrefix $Net2.SubnetCIDR 
-  New-AzVirtualNetwork -Name $Net1.VNetName -ResourceGroupName $ResGrpName -Location $Loc -AddressPrefix $Net1.VnetCIDR -Subnet $Subnet1
-  New-AzVirtualNetwork -Name $Net2.VNetName -ResourceGroupName $ResGrpName -Location $Loc -AddressPrefix $Net2.VnetCIDR -Subnet $Subnet2
-}
-
-function Initialize-DemoVMPair {
-  $Loc = 'EastUS'
-  $ResGrpName = 'demoresgroup'
-  $VM1 = @{
-    Name = 'demovm1'
-    VNet = 'vnet1'
-    Subnet = 'subnet1'
-    SecurityGroup = 'secgrp1'
-    PublicIP = 'publicip1'
+  $ResourceGroup = "demoresgroup"
+  $Location = "EastUS"
+  $vmName = "myVM"
+  $VMs = @( 
+    @{
+      Name = 'demovm1'
+      VNet = 'vnet1'
+      Subnet = 'subnet1'
+      SecurityGroup = 'secgrp1'
+      PublicIP = 'publicip1'
+      VNetPrefix  = '10.5.0.0/16'
+      SubnetPrefix = '10.5.0.0/24'
+    } , 
+    @{
+      Name = 'demovm2'
+      VNet = 'vnet2'
+      Subnet = 'subnet2'
+      SecurityGroup = 'secgrp2'
+      PublicIP = 'publicip2'
+      VNetPrefix  = '100.50.0.0/16'
+      SubnetPrefix = '100.50.0.0/24'  
+    }
+  )
+  $Cred = Get-Credential -Message "Enter a username and password for the virtual machine."
+  New-AzResourceGroup -Name $ResourceGroup -Location $Location
+  foreach ($VM in $VMs) {
+    $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VNet1.Subnet -AddressPrefix $VNet1.SubnetPrefix
+    $vnet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig
+    $pip = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4
+    $nsgRuleRDP = New-AzNetworkSecurityRuleConfig -Name myNetworkSecurityGroupRuleRDP  -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow
+    $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroup -Location $Location -Name myNetworkSecurityGroup -SecurityRules $nsgRuleRDP
+    $nic = New-AzNetworkInterface -Name myNic -ResourceGroupName $ResourceGroup -Location $Location -SubnetId $vnet.Subnets[0].Id -PublicIpAddressId $pip.Id -NetworkSecurityGroupId $nsg.Id
+    $vmConfig = New-AzVMConfig -VMName $vmName -VMSize Standard_D1 | 
+      Set-AzVMOperatingSystem -Windows -ComputerName $VM.Name -Credential $cred | 
+      Set-AzVMSourceImage -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus '2016-Datacenter' -Version latest | 
+      Add-AzVMNetworkInterface -Id $nic.Id
+    New-AzVM -ResourceGroupName $ResourceGroup -Location $Location -VM $vmConfig
   }  
-  $VM2 = @{
-    Name = 'demovm2'
-    VNet = 'vnet2'
-    Subnet = 'subnet2'
-    SecurityGroup = 'secgrp2'
-    PublicIP = 'publicip2'
-  }
-
-  $cred = Get-Credential
-  $vmInfo1 = New-AzVMConfig -VMName $VM1.Name -VMSize Standard_D1
-  $vmInfo1 = Set-AzVMOperatingSystem -VM $VMInfo1 -Windows -ComputerName $VM1.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate 
-  $vmInfo1 = Set-AzVMSourceImage -VM $VMInfo1 -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus '2016-Datacenter' -Version latest
-  New-AzVm -ResourceGroupName $ResGrpName -Name $VM1.Name -Location $Loc -VirtualNetworkName $VM1.VNet -SubnetName $VM1.Subnet -SecurityGroupName $VM1.SecurityGroup -PublicIpAddressName $VM1.PublicIP -OpenPorts 80,3389
-
-  $vmInfo2 = New-AzVMConfig -VMName $VM2.Name -VMSize Standard_D1
-  $vmInfo2 = Set-AzVMOperatingSystem -VM $VMInfo2 -Windows -ComputerName $VM2.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate 
-  $vmInfo2 = Set-AzVMSourceImage -VM $VMInfo2 -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus '2016-Datacenter' -Version latest
-  New-AzVm -ResourceGroupName $ResGrpName -Name $VM2.Name -Location $Loc -VirtualNetworkName $VM2.VNet -SubnetName $VM2.Subnet -SecurityGroupName $VM2.SecurityGroup -PublicIpAddressName $VM2.PublicIP -OpenPorts 80,3389
-}
+}   
