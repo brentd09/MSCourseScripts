@@ -25,8 +25,8 @@
   )
   $Cred = Get-Credential -Message "Enter a username and password for the virtual machine."
   New-AzResourceGroup -Name $ResourceGroup -Location $Location
-  foreach ($VM in $VMs) {
-    $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VNet1.Subnet -AddressPrefix $VNet1.SubnetPrefix
+  foreach ($VM in $VMs) {vnet
+    $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix
     $vnet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig
     $pip = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4
     $nsgRuleRDP = New-AzNetworkSecurityRuleConfig -Name myNetworkSecurityGroupRuleRDP  -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow
