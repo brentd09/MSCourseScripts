@@ -98,26 +98,30 @@
 
   Clear-Host
   $CurrentResGrps = Get-AzResourceGroup
-  if ($ResourceGroup -notin $CurrentResGrps.ResourceGroupName) {New-AzResourceGroup -Name $ResourceGroup -Location $Location > $null}
+  Write-Progress -Activity "Creating Azure resources" -Status "Starting the build" -PercentComplete 0 
+  if ($ResourceGroup -notin $CurrentResGrps.ResourceGroupName) {
+    New-AzResourceGroup -Name $ResourceGroup -Location $Location > $null
+  }
   foreach ($VM in $VMs) {
     $WarningPreference = 'SilentlyContinue'
     try {
+      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating VNet and Subnet" -PercentComplete 15  
       $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix -ErrorAction stop
       $VNet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig  -ErrorAction stop
-      Write-Progress -Activity 'Creating Azure resources' -Status "Creating VNet and Subnet" -PercentComplete 20  
+      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating Public IP" -PercentComplete 30
       $PubIp = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4  -ErrorAction stop
-      Write-Progress -Activity 'Creating Azure resources' -Status "Creating Public IP" -PercentComplete 40
+      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating NSG" -PercentComplete 45
       $NSGRuleRDP = New-AzNetworkSecurityRuleConfig -Name $VM.NSGName  -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow  -ErrorAction stop
       $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.SecurityGroup -SecurityRules $NSGRuleRDP  -ErrorAction stop
-      Write-Progress -Activity 'Creating Azure resources' -Status "Creating NSG" -PercentComplete 60
+      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating NIC" -PercentComplete 60  
       $NIC = New-AzNetworkInterface -Name $VM.NICName -ResourceGroupName $ResourceGroup -Location $Location -SubnetId $VNet.Subnets[0].Id -PublicIpAddressId $PubIp.Id -NetworkSecurityGroupId $NSG.Id  -ErrorAction stop
       $VMConfig = New-AzVMConfig -VMName $VM.Name -VMSize Standard_D1  -ErrorAction stop  | 
         Set-AzVMOperatingSystem -Windows -ComputerName $VM.Name -Credential $Cred -ErrorAction stop | 
         Set-AzVMSourceImage -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus '2016-Datacenter' -Version latest -ErrorAction stop | 
         Add-AzVMNetworkInterface -Id $NIC.Id  -ErrorAction stop
-      Write-Progress -Activity 'Creating Azure resources' -Status "Creating NIC" -PercentComplete 80  
+      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating VM" -PercentComplete 75 
       New-AzVM -ResourceGroupName $ResourceGroup -Location $Location -VM $VMConfig -ErrorAction stop
-      Write-Progress -Activity 'Creating Azure resources' -Status "Creating VM" -PercentComplete 100 -Completed
+      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating VM" -PercentComplete 100 -Completed
     }
     catch {
       $WarningPreference = 'Continue'
