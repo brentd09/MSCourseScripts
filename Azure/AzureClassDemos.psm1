@@ -2,7 +2,6 @@
 
   $ResourceGroup = "demoresgroup"
   $Location = "EastUS"
-  $vmName = "myVM"
   $VMs = @( 
     @{
       Name = 'demovm1'
@@ -41,7 +40,7 @@
     $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.SecurityGroup -SecurityRules $NSGRuleRDP 
     Write-Progress -Activity 'Creating Azure resources' -Status "Creating NSG" -PercentComplete 60
     $NIC = New-AzNetworkInterface -Name $VM.NICName -ResourceGroupName $ResourceGroup -Location $Location -SubnetId $VNet.Subnets[0].Id -PublicIpAddressId $PubIp.Id -NetworkSecurityGroupId $NSG.Id 
-    $VMConfig = New-AzVMConfig -VMName $vmName -VMSize Standard_D1 | 
+    $VMConfig = New-AzVMConfig -VMName $VM.Name -VMSize Standard_D1 | 
       Set-AzVMOperatingSystem -Windows -ComputerName $VM.Name -Credential $Cred | 
       Set-AzVMSourceImage -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus '2016-Datacenter' -Version latest | 
       Add-AzVMNetworkInterface -Id $NIC.Id
