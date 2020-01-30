@@ -30,16 +30,21 @@
   $Cred = Get-Credential -Message "Enter a username and password for the virtual machine."
   New-AzResourceGroup -Name $ResourceGroup -Location $Location
   foreach ($VM in $VMs) {
-    $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix *> $null
-    $VNet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig *> $null
-    $PubIp = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4 *> $null
-    $NSGRuleRDP = New-AzNetworkSecurityRuleConfig -Name $VM.NSGName  -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow *> $null
-    $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.SecurityGroup -SecurityRules $NSGRuleRDP *> $null
-    $NIC = New-AzNetworkInterface -Name $VM.NICName -ResourceGroupName $ResourceGroup -Location $Location -SubnetId $VNet.Subnets[0].Id -PublicIpAddressId $PubIp.Id -NetworkSecurityGroupId $NSG.Id *> $null
+    Write-Progress -Activity "Creating VNet and Subnet for $($VM.Nme)" -PercentComplete .2 
+    $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix 3> $null
+    $VNet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig 3> $null
+    Write-Progress -Activity "Creating Public IP for $($VM.Nme)" -PercentComplete .4
+    $PubIp = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4 3> $null
+    Write-Progress -Activity "Creating NSG for $($VM.Nme)" -PercentComplete .6
+    $NSGRuleRDP = New-AzNetworkSecurityRuleConfig -Name $VM.NSGName  -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow 3> $null
+    $NSG = New-AzNetworkSecurityGroup -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.SecurityGroup -SecurityRules $NSGRuleRDP 3> $null
+    Write-Progress -Activity "Creating NIC for $($VM.Nme)" -PercentComplete .8
+    $NIC = New-AzNetworkInterface -Name $VM.NICName -ResourceGroupName $ResourceGroup -Location $Location -SubnetId $VNet.Subnets[0].Id -PublicIpAddressId $PubIp.Id -NetworkSecurityGroupId $NSG.Id 3> $null
     $VMConfig = New-AzVMConfig -VMName $vmName -VMSize Standard_D1 | 
       Set-AzVMOperatingSystem -Windows -ComputerName $VM.Name -Credential $Cred | 
       Set-AzVMSourceImage -PublisherName MicrosoftWindowsServer -Offer WindowsServer -Skus '2016-Datacenter' -Version latest | 
       Add-AzVMNetworkInterface -Id $NIC.Id
-    New-AzVM -ResourceGroupName $ResourceGroup -Location $Location -VM $VMConfig *> $null
+    Write-Progress -Activity "Creating VM - $($VM.Nme)" -Completed
+      New-AzVM -ResourceGroupName $ResourceGroup -Location $Location -VM $VMConfig 3> $null
   }  
 }   
