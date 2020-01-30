@@ -22,8 +22,8 @@
         VNetPrefix  = '10.5.0.0/16'
         SubnetPrefix = '10.5.0.0/24'
       }
-    This creates all of the infrastructure to support two Azure VMs in
-    two different VNets, as seen here the resource group name, the location
+    This creates all of the infrastructure to support the VM shown in
+    the vnet1 VNet, as seen here the resource group name, the location
     and the VM information in a hash table can be presented as paramters to
     set your own values, make sure all of the VM information is in the hash
     table. The VMs parameter can also take an array of hastables if more than
