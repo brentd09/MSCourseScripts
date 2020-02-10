@@ -1,4 +1,20 @@
 function Export-ExcelToPDF {
+  <#
+  .SYNOPSIS
+    Automate xlsx to pdf
+  .DESCRIPTION
+    Long description
+    https://msdn.microsoft.com/en-us/library/bb149081.aspx
+  .PARAMETER ExcelFilePath
+    This is the full path the the .xlsx file that will be saved as a PDF file
+  .EXAMPLE
+    Export-ExcelToPDF -ExcelFilePath c:\file.xlsx
+    This will save the spreadsheet to a pdf in the path c:\file.pdf
+  .NOTES
+    General notes
+      Created by: Brent Denny
+      Created on 10 Feb 2020
+  #>
   [cmdletbinding()]
   Param(
     [Parameter(Mandatory=$true)]
