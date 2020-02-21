@@ -33,31 +33,33 @@
   
   ### MAIN CODE ###
   [ipaddress]$RevSNID = '1.1.1.1'
-  $SubnetBits = [math]::Ceiling([math]::Log($RequiredSubnets)/[math]::Log(2))
-  $NumberOfHostBits = 32 - $CIDRSNM - $SubnetBits
-  $SubnetInfo = Get-SubnetMaskInfo -SubnetMask ($CIDRSNM + $SubnetBits)
-  $NumberOfSubnets = [math]::Pow(2,$SubnetBits)
-  $NumberOfBitsToAdd = [math]::Pow(2,$NumberOfHostBits)
-  if ($RequiredHostsPerSubnet -lt $NumberOfBitsToAdd - 2) {
-    0..($NumberOfSubnets-1) | ForEach-Object {
-      $RevSNID = Get-ReversedIPAddress -IPAddress $NetworkID
-      $FirstRevIPNum = $RevSNID.Address + $NumberOfBitsToAdd * $_
-      $LastRevIPNum  = $RevSNID.Address + ((1 + $_) * $NumberOfBitsToAdd - 1)
-      $FirstValidNum = $RevSNID.Address + $NumberOfBitsToAdd * $_ + 1
-      $LastValidNum  = $RevSNID.Address + ((1 + $_) * $NumberOfBitsToAdd - 2)
-      $SubnetHash = [ordered]@{
-        StartSubnetID =  ([ipaddress]$FirstRevIPNum).IPAddressToString
-        EndSubnetID = ([ipaddress]$LastRevIPNum).IPAddressToString
-        SubnetID = $SubnetInfo.DottedDecimal
-        FirstValidIP = ([ipaddress]$FirstValidNum).IPAddressToString
-        LastValidIP = ([ipaddress]$LastValidNum).IPAddressToString
-        HostsPerSubnet = $NumberOfBitsToAdd - 2
+  foreach ($Scenario in (0..29)) { 
+    $SubnetBits = [math]::Ceiling([math]::Log($RequiredSubnets)/[math]::Log(2)) + $Scenario
+    $NumberOfHostBits = 32 - $CIDRSNM - $SubnetBits
+    $SubnetInfo = Get-SubnetMaskInfo -SubnetMask ($CIDRSNM + $SubnetBits)
+    $NumberOfSubnets = [math]::Pow(2,$SubnetBits)
+    $NumberOfBitsToAdd = [math]::Pow(2,$NumberOfHostBits)
+    if ($RequiredHostsPerSubnet -lt $NumberOfBitsToAdd - 2) {
+      0..($NumberOfSubnets-1) | ForEach-Object {
+        $RevSNID = Get-ReversedIPAddress -IPAddress $NetworkID
+        $FirstRevIPNum = $RevSNID.Address + $NumberOfBitsToAdd * $_
+        $LastRevIPNum  = $RevSNID.Address + ((1 + $_) * $NumberOfBitsToAdd - 1)
+        $FirstValidNum = $RevSNID.Address + $NumberOfBitsToAdd * $_ + 1
+        $LastValidNum  = $RevSNID.Address + ((1 + $_) * $NumberOfBitsToAdd - 2)
+        $SubnetHash = [ordered]@{
+          StartSubnetID =  ([ipaddress]$FirstRevIPNum).IPAddressToString
+          EndSubnetID = ([ipaddress]$LastRevIPNum).IPAddressToString
+          SubnetID = $SubnetInfo.DottedDecimal
+          FirstValidIP = ([ipaddress]$FirstValidNum).IPAddressToString
+          LastValidIP = ([ipaddress]$LastValidNum).IPAddressToString
+          HostsPerSubnet = $NumberOfBitsToAdd - 2
+        }
+        [PSCustomObject]$SubnetHash
       }
-      [PSCustomObject]$SubnetHash
+    }
+    else {
+      break
     }
   }
-  else {
-    Write-Warning "$NetworkID/$CIDRSNM requiring $RequiredSubnets subnets and $RequiredHostsPerSubnet hosts per subnet is not possible!"
-  }
 }
-Get-IPSubnetRange -NetworkID 192.168.0.0 -CIDRSNM 16 -RequiredSubnets 5 -RequiredHostsPerSubnet 2000 | ft
+Get-IPSubnetRange -NetworkID 192.168.0.0 -CIDRSNM 16 -RequiredSubnets 5 -RequiredHostsPerSubnet 1000 | ft
