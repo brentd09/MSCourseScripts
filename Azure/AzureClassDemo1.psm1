@@ -1,17 +1,17 @@
-﻿function Initialize-DemoVMPair {
+﻿function New-AZDemoVMs {
   <#
   .SYNOPSIS
-    This creates two Azure VMs in seperate VNets
+    This creates Three Azure VMs, two in one VNet and another in a seperate VNet
   .DESCRIPTION
-    By default Two Azure VMs are created in two different VNets, this 
-    is to quickly show the default nature of the non routing between 
-    non-peered VNets
+    I Azure this will create by default 1 VM in one VNet and 2 other VMs in another
+    VNet the 2 VMs in the second VNet will also be created in two subnets within the 
+    Vnet
   .EXAMPLE
-    Initialize-DemoVMPair 
+    New-AZDemoVMs 
     This creates all of the infrastructure to support two Azure VMs in
     two different VNets
   .EXAMPLE
-    Initialize-DemoVMPair -ResourceGroup Resgrpname -Location EastUS -VMs @{
+    New-AZDemoVMs -ResourceGroup Resgrpname -Location EastUS -VMs @{
         Name = 'demovm1'
         NICName = 'NIC1'
         VNet = 'vnet1'
@@ -62,8 +62,8 @@
   .NOTES
     General notes
       Created by:   Brent Denny
-      Created on:   30 Jan 2020
-      Modified on:  30 Jan 2020
+      Created on:   30 Jan 2020 (Creating 2 VMs)
+      Modified on:  25 Feb 2020 (creating 3 VMs)
   #>
   [Cmdletbinding()]
   Param (
@@ -116,15 +116,17 @@
   foreach ($VM in $VMs) {
     $WarningPreference = 'SilentlyContinue'
     try {
-      Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating VNet and Subnet" -PercentComplete 15  
-      $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix -ErrorAction stop
       $CurrentVnets = Get-AzVirtualNetwork
       if ($VM.Vnet -notin $CurrentVnets.Name) {
+        Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating VNet and Subnet" -PercentComplete 15  
+        $SubnetConfig = New-AzVirtualNetworkSubnetConfig -Name $VM.Subnet -AddressPrefix $VM.SubnetPrefix -ErrorAction stop
         $VNet = New-AzVirtualNetwork -ResourceGroupName $ResourceGroup -Location $Location -Name $VM.VNet -AddressPrefix $VM.VNetPrefix -Subnet $subnetConfig  -ErrorAction stop
         Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating Public IP" -PercentComplete 30
       }
       if ($VM.SubnetPrefix -notin $CurrentVnets.Subnets.AddressPrefix) {
-        Add-AzVirtualNetworkSubnetConfig -Name $VM.subnet -VirtualNetwork $VM.Vnet -AddressPrefix $VM.SubnetPrefix
+        $VNetToModify = Get-AzVirtualNetwork -Name $VM.VNet
+        Add-AzVirtualNetworkSubnetConfig -Name $VM.subnet -VirtualNetwork $VNetToModify -AddressPrefix $VM.SubnetPrefix
+        Set-AzVirtualNetwork -VirtualNetwork $VNetToModify
       }
       $PubIp = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4  -ErrorAction stop
       Write-Progress -Activity "Creating Azure resources - $($VM.Name)" -Status "Creating NSG" -PercentComplete 45
