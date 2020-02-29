@@ -115,6 +115,7 @@
   }
   foreach ($VM in $VMs) {
     $WarningPreference = 'SilentlyContinue'
+    $ErrorActionPreference = 'SilentlyContinue'
     try {
       $CurrentVnets = Get-AzVirtualNetwork
       if ($VM.Vnet -notin $CurrentVnets.Name) {
@@ -125,7 +126,7 @@
       }
       if ($VM.SubnetPrefix -notin $CurrentVnets.Subnets.AddressPrefix) {
         $VNetToModify = Get-AzVirtualNetwork -Name $VM.VNet
-        Add-AzVirtualNetworkSubnetConfig -Name $VM.subnet -VirtualNetwork $VNetToModify -AddressPrefix $VM.SubnetPrefix
+        Add-AzVirtualNetworkSubnetConfig -Name $VM.subnet -VirtualNetwork $VNetToModify -AddressPrefix $VM.SubnetPrefix 
         Set-AzVirtualNetwork -VirtualNetwork $VNetToModify
       }
       $PubIp = New-AzPublicIpAddress -ResourceGroupName $ResourceGroup -Location $Location -Name "mypublicdns$(Get-Random)" -AllocationMethod Static -IdleTimeoutInMinutes 4  -ErrorAction stop

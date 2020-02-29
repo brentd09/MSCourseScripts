@@ -1,0 +1,650 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+      "virtualNetworks_VNet1_name": {
+          "defaultValue": "VNet1",
+          "type": "String"
+      },
+      "virtualNetworks_VNet2_name": {
+          "defaultValue": "VNet2",
+          "type": "String"
+      },
+      "virtualMachines_Windowsv1s1_name": {
+          "defaultValue": "Windowsv1s1",
+          "type": "String"
+      },
+      "virtualMachines_windowsv1s2_name": {
+          "defaultValue": "windowsv1s2",
+          "type": "String"
+      },
+      "virtualMachines_windowsv2s1_name": {
+          "defaultValue": "windowsv2s1",
+          "type": "String"
+      },
+      "networkInterfaces_windowsv1s1374_name": {
+          "defaultValue": "windowsv1s1374",
+          "type": "String"
+      },
+      "networkInterfaces_windowsv1s2556_name": {
+          "defaultValue": "windowsv1s2556",
+          "type": "String"
+      },
+      "networkInterfaces_windowsv2s1156_name": {
+          "defaultValue": "windowsv2s1156",
+          "type": "String"
+      },
+      "publicIPAddresses_Windowsv1s1_ip_name": {
+          "defaultValue": "Windowsv1s1-ip",
+          "type": "String"
+      },
+      "publicIPAddresses_windowsv1s2_ip_name": {
+          "defaultValue": "windowsv1s2-ip",
+          "type": "String"
+      },
+      "publicIPAddresses_windowsv2s1_ip_name": {
+          "defaultValue": "windowsv2s1-ip",
+          "type": "String"
+      },
+      "networkSecurityGroups_Windowsv1s1_nsg_name": {
+          "defaultValue": "Windowsv1s1-nsg",
+          "type": "String"
+      },
+      "networkSecurityGroups_windowsv1s2_nsg_name": {
+          "defaultValue": "windowsv1s2-nsg",
+          "type": "String"
+      },
+      "networkSecurityGroups_windowsv2s1_nsg_name": {
+          "defaultValue": "windowsv2s1-nsg",
+          "type": "String"
+      }
+  },
+  "variables": {},
+  "resources": [
+      {
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('networkSecurityGroups_Windowsv1s1_nsg_name')]",
+          "location": "eastus",
+          "properties": {
+              "securityRules": [
+                  {
+                      "name": "RDP",
+                      "properties": {
+                          "protocol": "TCP",
+                          "sourcePortRange": "*",
+                          "destinationPortRange": "3389",
+                          "sourceAddressPrefix": "*",
+                          "destinationAddressPrefix": "*",
+                          "access": "Allow",
+                          "priority": 300,
+                          "direction": "Inbound",
+                          "sourcePortRanges": [],
+                          "destinationPortRanges": [],
+                          "sourceAddressPrefixes": [],
+                          "destinationAddressPrefixes": []
+                      }
+                  }
+              ]
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('networkSecurityGroups_windowsv1s2_nsg_name')]",
+          "location": "eastus",
+          "properties": {
+              "securityRules": [
+                  {
+                      "name": "RDP",
+                      "properties": {
+                          "protocol": "TCP",
+                          "sourcePortRange": "*",
+                          "destinationPortRange": "3389",
+                          "sourceAddressPrefix": "*",
+                          "destinationAddressPrefix": "*",
+                          "access": "Allow",
+                          "priority": 300,
+                          "direction": "Inbound",
+                          "sourcePortRanges": [],
+                          "destinationPortRanges": [],
+                          "sourceAddressPrefixes": [],
+                          "destinationAddressPrefixes": []
+                      }
+                  }
+              ]
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkSecurityGroups",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('networkSecurityGroups_windowsv2s1_nsg_name')]",
+          "location": "eastus",
+          "properties": {
+              "securityRules": [
+                  {
+                      "name": "RDP",
+                      "properties": {
+                          "protocol": "TCP",
+                          "sourcePortRange": "*",
+                          "destinationPortRange": "3389",
+                          "sourceAddressPrefix": "*",
+                          "destinationAddressPrefix": "*",
+                          "access": "Allow",
+                          "priority": 300,
+                          "direction": "Inbound",
+                          "sourcePortRanges": [],
+                          "destinationPortRanges": [],
+                          "sourceAddressPrefixes": [],
+                          "destinationAddressPrefixes": []
+                      }
+                  }
+              ]
+          }
+      },
+      {
+          "type": "Microsoft.Network/publicIPAddresses",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('publicIPAddresses_Windowsv1s1_ip_name')]",
+          "location": "eastus",
+          "sku": {
+              "name": "Basic"
+          },
+          "properties": {
+              "ipAddress": "40.87.63.44",
+              "publicIPAddressVersion": "IPv4",
+              "publicIPAllocationMethod": "Dynamic",
+              "idleTimeoutInMinutes": 4,
+              "ipTags": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/publicIPAddresses",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('publicIPAddresses_windowsv1s2_ip_name')]",
+          "location": "eastus",
+          "sku": {
+              "name": "Basic"
+          },
+          "properties": {
+              "ipAddress": "40.87.127.77",
+              "publicIPAddressVersion": "IPv4",
+              "publicIPAllocationMethod": "Dynamic",
+              "idleTimeoutInMinutes": 4,
+              "ipTags": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/publicIPAddresses",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('publicIPAddresses_windowsv2s1_ip_name')]",
+          "location": "eastus",
+          "sku": {
+              "name": "Basic"
+          },
+          "properties": {
+              "ipAddress": "13.72.66.0",
+              "publicIPAddressVersion": "IPv4",
+              "publicIPAllocationMethod": "Dynamic",
+              "idleTimeoutInMinutes": 4,
+              "ipTags": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('virtualNetworks_VNet1_name')]",
+          "location": "eastus",
+          "properties": {
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "10.0.0.0/16",
+                      "10.50.0.0/16"
+                  ]
+              },
+              "subnets": [
+                  {
+                      "name": "VN1Subnet1",
+                      "properties": {
+                          "addressPrefix": "10.50.0.0/24",
+                          "delegations": [],
+                          "privateEndpointNetworkPolicies": "Enabled",
+                          "privateLinkServiceNetworkPolicies": "Enabled"
+                      }
+                  },
+                  {
+                      "name": "VN1Subnet2",
+                      "properties": {
+                          "addressPrefix": "10.50.1.0/24",
+                          "delegations": [],
+                          "privateEndpointNetworkPolicies": "Enabled",
+                          "privateLinkServiceNetworkPolicies": "Enabled"
+                      }
+                  }
+              ],
+              "virtualNetworkPeerings": [],
+              "enableDdosProtection": false,
+              "enableVmProtection": false
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('virtualNetworks_VNet2_name')]",
+          "location": "eastus",
+          "properties": {
+              "addressSpace": {
+                  "addressPrefixes": [
+                      "172.16.0.0/16"
+                  ]
+              },
+              "subnets": [
+                  {
+                      "name": "VN2Subnet1",
+                      "properties": {
+                          "addressPrefix": "172.16.0.0/24",
+                          "delegations": [],
+                          "privateEndpointNetworkPolicies": "Enabled",
+                          "privateLinkServiceNetworkPolicies": "Enabled"
+                      }
+                  },
+                  {
+                      "name": "VN2Subnet2",
+                      "properties": {
+                          "addressPrefix": "172.16.1.0/24",
+                          "delegations": [],
+                          "privateEndpointNetworkPolicies": "Enabled",
+                          "privateLinkServiceNetworkPolicies": "Enabled"
+                      }
+                  }
+              ],
+              "virtualNetworkPeerings": [],
+              "enableDdosProtection": false,
+              "enableVmProtection": false
+          }
+      },
+      {
+          "type": "Microsoft.Compute/virtualMachines",
+          "apiVersion": "2019-07-01",
+          "name": "[parameters('virtualMachines_Windowsv1s1_name')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_windowsv1s1374_name'))]"
+          ],
+          "properties": {
+              "hardwareProfile": {
+                  "vmSize": "Standard_DS1_v2"
+              },
+              "storageProfile": {
+                  "imageReference": {
+                      "publisher": "MicrosoftWindowsServer",
+                      "offer": "WindowsServer",
+                      "sku": "2016-Datacenter",
+                      "version": "latest"
+                  },
+                  "osDisk": {
+                      "osType": "Windows",
+                      "name": "[concat(parameters('virtualMachines_Windowsv1s1_name'), '_disk1_f480a862b9ec4b3b960aafe622edabc0')]",
+                      "createOption": "FromImage",
+                      "caching": "ReadWrite",
+                      "managedDisk": {
+                          "storageAccountType": "Premium_LRS"
+                      },
+                      "diskSizeGB": 127
+                  },
+                  "dataDisks": []
+              },
+              "osProfile": {
+                  "computerName": "[parameters('virtualMachines_Windowsv1s1_name')]",
+                  "adminUsername": "admin1234",
+                  "windowsConfiguration": {
+                      "provisionVMAgent": true,
+                      "enableAutomaticUpdates": true
+                  },
+                  "secrets": [],
+                  "allowExtensionOperations": true
+              },
+              "networkProfile": {
+                  "networkInterfaces": [
+                      {
+                          "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_windowsv1s1374_name'))]"
+                      }
+                  ]
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Compute/virtualMachines",
+          "apiVersion": "2019-07-01",
+          "name": "[parameters('virtualMachines_windowsv1s2_name')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_windowsv1s2556_name'))]"
+          ],
+          "properties": {
+              "hardwareProfile": {
+                  "vmSize": "Standard_DS1_v2"
+              },
+              "storageProfile": {
+                  "imageReference": {
+                      "publisher": "MicrosoftWindowsServer",
+                      "offer": "WindowsServer",
+                      "sku": "2016-Datacenter",
+                      "version": "latest"
+                  },
+                  "osDisk": {
+                      "osType": "Windows",
+                      "name": "[concat(parameters('virtualMachines_windowsv1s2_name'), '_disk1_feb160e1b86b4818a18c3524cb1caa17')]",
+                      "createOption": "FromImage",
+                      "caching": "ReadWrite",
+                      "managedDisk": {
+                          "storageAccountType": "Premium_LRS"
+                      },
+                      "diskSizeGB": 127
+                  },
+                  "dataDisks": []
+              },
+              "osProfile": {
+                  "computerName": "[parameters('virtualMachines_windowsv1s2_name')]",
+                  "adminUsername": "admin1234",
+                  "windowsConfiguration": {
+                      "provisionVMAgent": true,
+                      "enableAutomaticUpdates": true
+                  },
+                  "secrets": [],
+                  "allowExtensionOperations": true              },
+              "networkProfile": {
+                  "networkInterfaces": [
+                      {
+                          "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_windowsv1s2556_name'))]"
+                      }
+                  ]
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Compute/virtualMachines",
+          "apiVersion": "2019-07-01",
+          "name": "[parameters('virtualMachines_windowsv2s1_name')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_windowsv2s1156_name'))]"
+          ],
+          "properties": {
+              "hardwareProfile": {
+                  "vmSize": "Standard_DS1_v2"
+              },
+              "storageProfile": {
+                  "imageReference": {
+                      "publisher": "MicrosoftWindowsServer",
+                      "offer": "WindowsServer",
+                      "sku": "2016-Datacenter",
+                      "version": "latest"
+                  },
+                  "osDisk": {
+                      "osType": "Windows",
+                      "name": "[concat(parameters('virtualMachines_windowsv2s1_name'), '_disk1_c5da0901b6fa42ba8dff33bfd1c6df61')]",
+                      "createOption": "FromImage",
+                      "caching": "ReadWrite",
+                      "managedDisk": {
+                          "storageAccountType": "Premium_LRS"                      },
+                      "diskSizeGB": 127
+                  },
+                  "dataDisks": []
+              },
+              "osProfile": {
+                  "computerName": "[parameters('virtualMachines_windowsv2s1_name')]",
+                  "adminUsername": "admin1234",
+                  "windowsConfiguration": {
+                      "provisionVMAgent": true,
+                      "enableAutomaticUpdates": true
+                  },
+                  "secrets": [],
+                  "allowExtensionOperations": true              },
+              "networkProfile": {
+                  "networkInterfaces": [
+                      {
+                          "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_windowsv2s1156_name'))]"
+                      }
+                  ]
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('networkSecurityGroups_Windowsv1s1_nsg_name'), '/RDP')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_Windowsv1s1_nsg_name'))]"
+          ],
+          "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 300,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('networkSecurityGroups_windowsv1s2_nsg_name'), '/RDP')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_windowsv1s2_nsg_name'))]"
+          ],
+          "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 300,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('networkSecurityGroups_windowsv2s1_nsg_name'), '/RDP')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_windowsv2s1_nsg_name'))]"
+          ],
+          "properties": {
+              "protocol": "TCP",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 300,
+              "direction": "Inbound",
+              "sourcePortRanges": [],
+              "destinationPortRanges": [],
+              "sourceAddressPrefixes": [],
+              "destinationAddressPrefixes": []
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks/subnets",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('virtualNetworks_VNet1_name'), '/VN1Subnet1')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNet1_name'))]"
+          ],
+          "properties": {
+              "addressPrefix": "10.50.0.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks/subnets",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('virtualNetworks_VNet1_name'), '/VN1Subnet2')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNet1_name'))]"
+          ],
+          "properties": {
+              "addressPrefix": "10.50.1.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks/subnets",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('virtualNetworks_VNet2_name'), '/VN2Subnet1')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNet2_name'))]"
+          ],
+          "properties": {
+              "addressPrefix": "172.16.0.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+          }
+      },
+      {
+          "type": "Microsoft.Network/virtualNetworks/subnets",
+          "apiVersion": "2019-11-01",
+          "name": "[concat(parameters('virtualNetworks_VNet2_name'), '/VN2Subnet2')]",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_VNet2_name'))]"
+          ],
+          "properties": {
+              "addressPrefix": "172.16.1.0/24",
+              "delegations": [],
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled"
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkInterfaces",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('networkInterfaces_windowsv1s1374_name')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_Windowsv1s1_ip_name'))]",
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNet1_name'), 'VN1Subnet1')]",
+              "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_Windowsv1s1_nsg_name'))]"
+          ],
+          "properties": {
+              "ipConfigurations": [
+                  {
+                      "name": "ipconfig1",
+                      "properties": {
+                          "privateIPAddress": "10.50.0.4",
+                          "privateIPAllocationMethod": "Dynamic",
+                          "publicIPAddress": {
+                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_Windowsv1s1_ip_name'))]"
+                          },
+                          "subnet": {
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNet1_name'), 'VN1Subnet1')]"
+                          },
+                          "primary": true,
+                          "privateIPAddressVersion": "IPv4"
+                      }
+                  }
+              ],
+              "dnsSettings": {
+                  "dnsServers": []
+              },
+              "enableAcceleratedNetworking": false,
+              "enableIPForwarding": false,
+              "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_Windowsv1s1_nsg_name'))]"
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkInterfaces",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('networkInterfaces_windowsv1s2556_name')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_windowsv1s2_ip_name'))]",
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNet1_name'), 'VN1Subnet2')]",
+              "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_windowsv1s2_nsg_name'))]"
+          ],
+          "properties": {
+              "ipConfigurations": [
+                  {
+                      "name": "ipconfig1",
+                      "properties": {
+                          "privateIPAddress": "10.50.1.5",
+                          "privateIPAllocationMethod": "Dynamic",
+                          "publicIPAddress": {
+                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_windowsv1s2_ip_name'))]"
+                          },
+                          "subnet": {
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNet1_name'), 'VN1Subnet2')]"
+                          },
+                          "primary": true,
+                          "privateIPAddressVersion": "IPv4"
+                      }
+                  }
+              ],
+              "dnsSettings": {
+                  "dnsServers": []
+              },
+              "enableAcceleratedNetworking": false,
+              "enableIPForwarding": false,
+              "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_windowsv1s2_nsg_name'))]"
+              }
+          }
+      },
+      {
+          "type": "Microsoft.Network/networkInterfaces",
+          "apiVersion": "2019-11-01",
+          "name": "[parameters('networkInterfaces_windowsv2s1156_name')]",
+          "location": "eastus",
+          "dependsOn": [
+              "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_windowsv2s1_ip_name'))]",
+              "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNet1_name'), 'VN1Subnet2')]",
+              "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_windowsv2s1_nsg_name'))]"
+          ],
+          "properties": {
+              "ipConfigurations": [
+                  {
+                      "name": "ipconfig1",
+                      "properties": {
+                          "privateIPAddress": "10.50.1.4",
+                          "privateIPAllocationMethod": "Dynamic",
+                          "publicIPAddress": {
+                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_windowsv2s1_ip_name'))]"
+                          },
+                          "subnet": {
+                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_VNet1_name'), 'VN1Subnet2')]"
+                          },
+                          "primary": true,
+                          "privateIPAddressVersion": "IPv4"
+                      }
+                  }
+              ],
+              "dnsSettings": {
+                  "dnsServers": []
+              },
+              "enableAcceleratedNetworking": false,
+              "enableIPForwarding": false,
+              "networkSecurityGroup": {
+                  "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_windowsv2s1_nsg_name'))]"
+              }
+          }
+      }
+  ]
+}
