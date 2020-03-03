@@ -17,8 +17,19 @@ function Send-WakeOnLan {
       The IPAddress address where the WOL packet will be sent to
     .EXAMPLE 
       Send-WakeOnLan -MACAddress 00:11:32:21:2D:11 
+      You can choose an one MAC address to target for WOL
     .EXAMPLE 
-      Send-WakeOnLan -MACAddress 00:11:32:21:2D:11,00:11:32:21:2E:15       
+      Send-WakeOnLan -MACAddress 00:11:32:21:2D:11,00:11:32:21:2E:15
+      This command also supports an array of MAC Addresses
+    .EXAMPLE
+      "00-33-45-12-d4-e1"  | Send-WakeOnLan
+      This command also supports piplining so you can pipe the MAC addresses
+      into this command
+    .EXAMPLE
+      Get-Content e:\BuildingMACAddresses | Send-WakeOnLan
+      This example shows how you could have a list of MAC addresses in a text file
+      with each address on a seperate line and pipe the contents of this file into
+      the WOL command  
   #>
   
   [CmdletBinding()]
@@ -26,6 +37,7 @@ function Send-WakeOnLan {
     [Parameter(Mandatory=$True,Position=1,
                ValueFromPipeline,
                ValueFromPipelineByPropertyName)]
+    [ValidatePattern('([a-f0-9]{2}[:.-]?){5}[a-f0-9]{2}')]           
     [string[]]$MACAddress,
     [string]$IPAddress = "255.255.255.255", 
     [int]$PortNumber = 9
