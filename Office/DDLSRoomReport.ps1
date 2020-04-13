@@ -1,17 +1,17 @@
 <#
 .SYNOPSIS
-  Short description
+  Takes CRM databasse reports and creates a new excel spreadsheet from the data
 .DESCRIPTION
-  Long description
+  Takes the room reports from CRM in CSV format and creates an Excel spreadsheet 
+  showing rooms allocated to what course and all the information about in campus
+  and remote training happening from the CRM reports
 .EXAMPLE
-  PS C:\> <example usage>
-  Explanation of what the example does
-.INPUTS
-  Inputs (if any)
-.OUTPUTS
-  Output (if any)
+  DDLSRoomReport.ps1 -FilePath c:\report\crm.csv
+  This takes the CSV report and creates an Excels Spreadsheet
 .NOTES
   General notes
+    Created by: Brent Denny
+    Created on: 14 Apr 2020
 #>
 [CmdletBinding()]
 Param (
