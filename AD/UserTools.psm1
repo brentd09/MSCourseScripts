@@ -1,6 +1,7 @@
 ﻿<#
   Functions in this module
     Get-CurrentUserSID
+    Compare-Password
 #>
 function Get-CurrentUserSID {
 [Cmdletbinding()]
@@ -14,4 +15,14 @@ User Name      SID
 '@
 
 whoami /user | ConvertFrom-String -TemplateContent $Template
+}
+
+function Compare-Password {
+  $First = Read-Host -AsSecureString -Prompt 'Please enter a new password'
+  $Second  = Read-Host -AsSecureString -Prompt 'Please re-enter new password to confirm'
+  $FirstClear = ((New-Object System.Management.Automation.PSCredential ('DummyName',$First)).GetNetworkCredential().password)
+  $SecondClear = ((New-Object System.Management.Automation.PSCredential ('DummyName',$Second)).GetNetworkCredential().password)
+
+  if ($FirstClear -ne $SecondClear) {"The passwords are not the same"}
+  else {"Passwords are identical"}
 }
