@@ -20,9 +20,9 @@ whoami /user | ConvertFrom-String -TemplateContent $Template
 function Compare-Password {
   $First = Read-Host -AsSecureString -Prompt 'Please enter a new password'
   $Second  = Read-Host -AsSecureString -Prompt 'Please re-enter new password to confirm'
-  $FirstClear = ((New-Object System.Management.Automation.PSCredential ('DummyName',$First)).GetNetworkCredential().password)
-  $SecondClear = ((New-Object System.Management.Automation.PSCredential ('DummyName',$Second)).GetNetworkCredential().password)
+  $FirstClear = (New-Object System.Management.Automation.PSCredential ('DummyName',$First)).GetNetworkCredential().Password
+  $SecondClear = (New-Object System.Management.Automation.PSCredential ('DummyName',$Second)).GetNetworkCredential().Password
 
-  if ($FirstClear -ne $SecondClear) {"The passwords are not the same"}
-  else {"Passwords are identical"}
+  if ($FirstClear -cne $SecondClear) {Write-Host -ForegroundColor Red "The passwords are not the same"}
+  else {Write-Host -ForegroundColor Green "Passwords are identical"}
 }
