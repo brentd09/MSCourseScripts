@@ -26,3 +26,15 @@ function Compare-Password {
   if ($FirstClear -cne $SecondClear) {Write-Host -ForegroundColor Red "The passwords are not the same"}
   else {Write-Host -ForegroundColor Green "Passwords are identical"}
 }
+
+function Get-CurrentUser {
+  Param (
+    [string[]]$ComputerName = $env:COMPUTERNAME
+  )
+  foreach ($Computer in $ComputerName) {
+    $CS = Get-WmiObject -Class win32_ComputerSystem -ComputerName $Computer
+    $AllUsers = Get-WmiObject -Class Win32_UserAccount -ComputerName $CimSession
+    $LoggedOnUser = $AllUsers | Where-Object {$_.Caption -eq $CS.UserName}
+    $LoggedOnUser
+  }
+}
