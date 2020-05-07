@@ -50,7 +50,7 @@
           $Hash = [ordered]@{
             VNetName = $VNet.Name
             ResourceGroup = $VNet.ResourceGroupName
-            VnetLocation = $VNet.Location
+            VNetLocation = $VNet.Location
             PeeringVNet = $PeerName
             PeeringVNetLocation = $PeerVNetLocation
             PeeringType = $PeerType
@@ -65,7 +65,7 @@
         $Hash = [ordered]@{
           VNetName = $VNet.Name
           ResourceGroup = $VNet.ResourceGroupName
-          VnetLocation = $VNet.Location
+          VNetLocation = $VNet.Location
           PeeringVNet = 'No Peerings'
           PeeringVNetLocation = 'N/A'
           PeeringType = 'N/A'
