@@ -12,13 +12,23 @@
     This expects that you have already signed into Azure using 
     Connect-AzAccount it will then find all of the VNets that have 
     peerings and determine each type 
+  .PARAMETER PeeringFilter
+    This will filter the peerings so that either a single peering type
+    is shown or all are shown. The values for the PeeringFilter are:
+    Regional - Shows only Regional
+    Global - Shows only Global
+    All - Shows all types pf peering
+    NoPeering - Shows only VNets with no peerings 
   .NOTES
     General notes
       Created by: Brent Denny
       Created on: 6 May 2020
   #>
   [cmdletbinding()]
-  Param()
+  Param(
+    [ValidateSet('Regional','Global','All','NoPeering')]
+    [string]$PeeringFilter = 'All'
+  )
   try {
     $VNets = Get-AzVirtualNetwork -ErrorAction Stop
     foreach ($VNet in $VNets){
@@ -37,7 +47,9 @@
             PeerVNetLocation = $PeerVNetLocation
             PeerType = $PeerType
           }
-          New-Object -TypeName psobject -Property $Hash   
+          if ($PeeringFilter -eq $PeerType -or $PeeringFilter -eq 'All') {
+            New-Object -TypeName psobject -Property $Hash   
+          }
         }
       }
       else {
@@ -49,7 +61,9 @@
           PeerType = 'N/A'
         }
       }  
-      New-Object -TypeName psobject -Property $Hash    
+      if ($PeeringFilter -eq 'NoPeering' -or $PeeringFilter -eq 'All') {
+        New-Object -TypeName psobject -Property $Hash    
+      }  
     }
   }  
   catch { Write-Warning 'An error occured trying to access the Virtual Networks'}
