@@ -1,7 +1,7 @@
 ﻿function Get-AzPeeringTypes {
   <#
   .SYNOPSIS
-    Lists all of Virtual Networks in Azure and determines their type
+    Lists all of the Azure virtual networks peerings and determines their type
   .DESCRIPTION
     This cmdlet finds all of the virtual networks that have peerings and 
     determines if the peering is a global or regional type of peering. 
