@@ -11,7 +11,13 @@
     Get-AzPeeringType
     This expects that you have already signed into Azure using 
     Connect-AzAccount it will then find all of the VNets that have 
-    peerings and determine each type 
+    peerings and determine each type
+  .EXAMPLE
+    Get-AzPeeringType -PeeringFilter Global
+    This will show peerings of a Global type   
+  .EXAMPLE
+    Get-AzPeeringType -PeeringFilter NoPeering
+    This will show VNets that do not have any peering configured       
   .PARAMETER PeeringFilter
     This will filter the peerings so that either a single peering type
     is shown or all are shown. The values for the PeeringFilter are:
