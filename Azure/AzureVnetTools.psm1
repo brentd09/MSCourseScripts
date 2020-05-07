@@ -52,6 +52,7 @@
             PeeredVNet = $PeerName
             PeerVNetLocation = $PeerVNetLocation
             PeerType = $PeerType
+            VNetID = $VNet.Id
           }
           if ($PeeringFilter -eq $PeerType -or $PeeringFilter -eq 'All') {
             New-Object -TypeName psobject -Property $Hash   
@@ -65,6 +66,7 @@
           PeeredVNet = 'No Peerings'
           PeerVNetLocation = 'N/A'
           PeerType = 'N/A'
+          VNetID = $VNet.Id
         }
         if ($PeeringFilter -eq 'NoPeering' -or $PeeringFilter -eq 'All') {
           New-Object -TypeName psobject -Property $Hash    
