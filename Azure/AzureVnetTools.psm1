@@ -17,7 +17,7 @@
     is shown or all are shown. The values for the PeeringFilter are:
     Regional - Shows only Regional
     Global - Shows only Global
-    All - Shows all types pf peering
+    All - Shows all types of peering
     NoPeering - Shows only VNets with no peerings 
   .NOTES
     General notes
@@ -60,9 +60,9 @@
           PeerVNetLocation = 'N/A'
           PeerType = 'N/A'
         }
-      }  
-      if ($PeeringFilter -eq 'NoPeering' -or $PeeringFilter -eq 'All') {
-        New-Object -TypeName psobject -Property $Hash    
+        if ($PeeringFilter -eq 'NoPeering' -or $PeeringFilter -eq 'All') {
+          New-Object -TypeName psobject -Property $Hash    
+        }       
       }  
     }
   }  
