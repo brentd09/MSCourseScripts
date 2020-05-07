@@ -42,15 +42,15 @@
       }
       else {
         $Hash = [ordered]@{
-        VNetName = $VNet.Name
-        VnetLocation = $VNet.Location
-        PeeredVNet = 'No Peerings'
-        PeerVNetLocation = 'N/A'
-        PeerType = 'N/A'
+          VNetName = $VNet.Name
+          VnetLocation = $VNet.Location
+          PeeredVNet = 'No Peerings'
+          PeerVNetLocation = 'N/A'
+          PeerType = 'N/A'
         }
       }  
       New-Object -TypeName psobject -Property $Hash    
     }
   }  
-  catch { $_}
+  catch { Write-Warning 'An error occured trying to access the Virtual Networks'}
 }
