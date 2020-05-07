@@ -49,10 +49,11 @@
           else {$PeerType = 'Global'}
           $Hash = [ordered]@{
             VNetName = $VNet.Name
+            ResourceGroup = $VNet.ResourceGroupName
             VnetLocation = $VNet.Location
-            PeeredVNet = $PeerName
-            PeerVNetLocation = $PeerVNetLocation
-            PeerType = $PeerType
+            PeeringVNet = $PeerName
+            PeeringVNetLocation = $PeerVNetLocation
+            PeeringType = $PeerType
             VNetID = $VNet.Id
           }
           if ($PeeringFilter -eq $PeerType -or $PeeringFilter -eq 'All') {
@@ -63,10 +64,11 @@
       else {
         $Hash = [ordered]@{
           VNetName = $VNet.Name
+          ResourceGroup = $VNet.ResourceGroupName
           VnetLocation = $VNet.Location
-          PeeredVNet = 'No Peerings'
-          PeerVNetLocation = 'N/A'
-          PeerType = 'N/A'
+          PeeringVNet = 'No Peerings'
+          PeeringVNetLocation = 'N/A'
+          PeeringType = 'N/A'
           VNetID = $VNet.Id
         }
         if ($PeeringFilter -eq 'NoPeering' -or $PeeringFilter -eq 'All') {
