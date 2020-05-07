@@ -20,26 +20,37 @@
   [cmdletbinding()]
   Param()
   try {
-    $AllVNets = Get-AzVirtualNetwork -ErrorAction Stop
-    $VNets = $AllVNets | Where-Object {$_.VirtualNetworkPeerings.Count -ge 1} 
+    $VNets = Get-AzVirtualNetwork -ErrorAction Stop
     foreach ($VNet in $VNets){
-      $Peerings = $VNet.VirtualNetworkPeerings
-      foreach ($Peering in $Peerings) {
-        $PeerName = $Peering.remotevirtualnetwork.id -replace '.+\/(.+)$','$1'
-        $PeerVNetInfo = $VNets | Where-Object {$_.Name -eq $PeerName}
-        $PeerVNetLocation = $PeerVNetInfo.Location
-        if ($VNet.Location -eq $PeerVNetLocation) {$PeerType = 'Regional'}
-        else {$PeerType = 'Global'}
-        $Hash = [ordered]@{
-          VNetName = $VNet.Name
-          VnetLocation = $VNet.Location
-          PeeredVNet = $PeerName
-          PeerVNetLocation = $PeerVNetLocation
-          PeerType = $PeerType
+      if ($VNet.VirtualNetworkPeerings.Count -ge 1) {
+        $Peerings = $VNet.VirtualNetworkPeerings
+        foreach ($Peering in $Peerings) {
+          $PeerName = $Peering.remotevirtualnetwork.id -replace '.+\/(.+)$','$1'
+          $PeerVNetInfo = $VNets | Where-Object {$_.Name -eq $PeerName}
+          $PeerVNetLocation = $PeerVNetInfo.Location
+          if ($VNet.Location -eq $PeerVNetLocation) {$PeerType = 'Regional'}
+          else {$PeerType = 'Global'}
+          $Hash = [ordered]@{
+            VNetName = $VNet.Name
+            VnetLocation = $VNet.Location
+            PeeredVNet = $PeerName
+            PeerVNetLocation = $PeerVNetLocation
+            PeerType = $PeerType
+          }
+          New-Object -TypeName psobject -Property $Hash   
         }
-        New-Object -TypeName psobject -Property $Hash
       }
+      else {
+        $Hash = [ordered]@{
+        VNetName = $VNet.Name
+        VnetLocation = $VNet.Location
+        PeeredVNet = 'No Peerings'
+        PeerVNetLocation = 'N/A'
+        PeerType = 'N/A'
+        }
+      }  
+      New-Object -TypeName psobject -Property $Hash    
     }
   }  
-  catch {Write-Warning 'There was a problem locating the Virtual Networks from Azure, Use Connect-AzAccount to sign in and try again'}
+  catch { $_}
 }
