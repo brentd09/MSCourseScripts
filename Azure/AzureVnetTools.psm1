@@ -1,4 +1,4 @@
-﻿function Get-AzPeeringTypes {
+﻿function Get-AzPeeringType {
   <#
   .SYNOPSIS
     Lists all of the Azure virtual networks peerings and determines their type
