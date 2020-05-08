@@ -49,31 +49,31 @@
           $PeerVNetLocation = $PeerVNetInfo.Location
           if ($VNet.Location -eq $PeerVNetLocation) {$PeerType = 'Regional'}
           else {$PeerType = 'Global'}
-          $Hash = [ordered]@{
-            VNetName = $VNet.Name
-            ResourceGroup = $VNet.ResourceGroupName
-            VNetLocation = $VNet.Location
-            PeeringVNet = $PeerName
-            PeeringVNetLocation = $PeerVNetLocation
-            PeeringType = $PeerType
-            VNetID = $VNet.Id
-          }
           if ($PeeringFilter -eq $PeerType -or $PeeringFilter -eq 'All') {
+            $Hash = [ordered]@{
+              VNetName = $VNet.Name
+              ResourceGroup = $VNet.ResourceGroupName
+              VNetLocation = $VNet.Location
+              PeeringVNet = $PeerName
+              PeeringVNetLocation = $PeerVNetLocation
+              PeeringType = $PeerType
+              VNetID = $VNet.Id
+            }
             New-Object -TypeName psobject -Property $Hash   
           }
         }
       }
       else {
-        $Hash = [ordered]@{
-          VNetName = $VNet.Name
-          ResourceGroup = $VNet.ResourceGroupName
-          VNetLocation = $VNet.Location
-          PeeringVNet = 'No Peerings'
-          PeeringVNetLocation = 'N/A'
-          PeeringType = 'N/A'
-          VNetID = $VNet.Id
-        }
         if ($PeeringFilter -eq 'NoPeering' -or $PeeringFilter -eq 'All') {
+          $Hash = [ordered]@{
+            VNetName = $VNet.Name
+            ResourceGroup = $VNet.ResourceGroupName
+            VNetLocation = $VNet.Location
+            PeeringVNet = 'No Peerings'
+            PeeringVNetLocation = 'N/A'
+            PeeringType = 'N/A'
+            VNetID = $VNet.Id
+          }
           New-Object -TypeName psobject -Property $Hash    
         }       
       }  
