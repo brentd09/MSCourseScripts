@@ -6,10 +6,11 @@
     This cmdlet finds all of the virtual networks that have peerings and 
     determines if the peering is a global or regional type of peering. 
     It will also show Virtual Networks that do not have any peerings as 
-    well. There are restrictions on what you can do with a global peering 
+    well. 
+    There are restrictions on what you can do with a global peering 
     so it is important to know which peering is what type.
-    This also expects that you have already signed into Azure using 
-    Connect-AzAccount.
+    This command will prompt you if you need to login to Azure via a 
+    Connect-AzAccount command
   .EXAMPLE
     Get-AzPeeringType
     This will show all peerings (Global, Regional and NoPeering).
@@ -30,13 +31,15 @@
     General notes
       Created by: Brent Denny
       Created on: 6 May 2020
-      Last Modified: 8 May 2020
+      Last Modified: 1 Jul 2020
   #>
   [cmdletbinding()]
   Param(
     [ValidateSet('Regional','Global','All','NoPeering')]
     [string]$PeeringFilter = 'All'
   )
+  try {Get-AzSubscription -ErrorAction Stop > $null}
+  catch {Connect-AzAccount}
   try {
     $VNets = Get-AzVirtualNetwork -ErrorAction Stop
     foreach ($VNet in $VNets){
