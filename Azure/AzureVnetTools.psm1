@@ -43,8 +43,8 @@
       if ($VNet.VirtualNetworkPeerings.Count -ge 1) {
         $Peerings = $VNet.VirtualNetworkPeerings
         foreach ($Peering in $Peerings) {
-          $PeerName = $Peering.remotevirtualnetwork.id -replace '.+\/(.+)$','$1'
           $PeerID = $Peering.remotevirtualnetwork.Id
+          $PeerName = $PeerID -replace '.+\/(.+)$','$1'
           $PeerVNetInfo = $VNets | Where-Object {$_.Id -eq $PeerID}
           $PeerVNetLocation = $PeerVNetInfo.Location
           if ($VNet.Location -eq $PeerVNetLocation) {$PeerType = 'Regional'}
