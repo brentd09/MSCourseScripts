@@ -28,6 +28,7 @@
 #>
 [CmdletBinding()]
 Param (
+  [Parameter(DontShow)] 
   [string]$AccessKey = (
     (New-Object System.Management.Automation.PSCredential (
       'name',(Read-Host -Prompt "Enter Access Key" -AsSecureString ))
