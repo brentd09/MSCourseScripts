@@ -41,11 +41,17 @@ Param (
   [Parameter(Mandatory=$true)]
   [string]$StorageAccountName
 )
-[array]$AZStorageModule = Get-Module Az.Storage
-if ($AZStorageModule.Count -eq 0){Write-Warning "This script requires the AZ module to be installed, Install-Module az";break}
-[array]$AZSubscription = Get-AzSubscription
-if ($AZSubscription.Count -eq 0) {Connect-AzAccount}
 if (Test-Path -Path $DirectoryPath -PathType Container) {
+  $AZStorageModule = Get-Module Az.Storage
+  $NeedAzModuleInstalled = [string]::IsNullOrEmpty($AZStorageModule)
+  if ($NeedAzModuleInstalled -eq $true) {Write-Warning "This script requires the AZ module to be installed, Install-Module az";break}
+  do { 
+    $AZSubscription = Get-AzSubscription
+    $NeedAzLogin = [string]::IsNullOrEmpty($AZSubscription)
+    if ($NeedAzLogin -eq $true) {Connect-AzAccount}
+    $AZSubscription = Get-AzSubscription
+    $NeedAzLogin = [string]::IsNullOrEmpty($AZSubscription)
+  } while ($NeedAzLogin -eq $true) 
   try {
     $context = New-AzStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $AccessKey -Protocol Https -ErrorAction Stop
     $files = (Get-ChildItem $DirectoryPath -Recurse -ErrorAction Stop).FullName
