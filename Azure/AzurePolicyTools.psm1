@@ -22,7 +22,10 @@ function Invoke-AzPolicyEvaluation {
     
   )
   $uri = "https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.PolicyInsights/policyStates/latest/triggerEvaluation?api-version=2018-07-01-preview"
-  try {$azContext = Get-AzContext -ErrorAction Stop}
+  try {
+    $azContext = Get-AzContext -ErrorAction Stop
+    if (-not $azContext) {throw}
+  }
   catch {
     try {
       Connect-AzAccount -ErrorAction stop
