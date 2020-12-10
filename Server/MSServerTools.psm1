@@ -115,8 +115,20 @@ function Get-PSVersion {
       Modified on: 10 Dec 2020
   #>
   [CmdletBinding()]
-  Param()
-  $FrameworkInfo = [System.Runtime.InteropServices.RuntimeInformation]::FrameworkDescription
-  $FrameworkVersion = ($FrameworkInfo -split '\s+')[-1]
-  $PSVersionTable | Select-Object -Property *,@{n='FrameworkVersion';e={$FrameworkVersion}}
+  Param(
+    [parameter(ValueFromPipelineByPropertyName,ValueFromPipeline)]
+    [string[]]$ComputerName = @('Localhost')
+  )
+  BEGIN {}
+  PROCESS {
+    foreach ($Computer in $ComputerName) {
+      Invoke-Command -ComputerName $Computer -ScriptBlock {
+        $FrameworkInfo = [System.Runtime.InteropServices.RuntimeInformation]::FrameworkDescription
+        $FrameworkVersion = ($FrameworkInfo -split '\s+')[-1]
+        $Info = New-Object -TypeName PSObject -Property $PSVersionTable | Select-Object -Property *,@{n='FrameworkVersion';e={$FrameworkVersion}}
+        return $Info
+      }
+    }
+  }
+  END {}
 }
