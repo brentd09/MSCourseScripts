@@ -97,3 +97,26 @@ function Get-ComputerUptime {
   }
   else {Write-warning "One or more of the IP addresses entered were not valid"}
 }  
+
+function Get-PSVersion {
+  <#
+  .SYNOPSIS
+    Adds .net framework version to the $PSVersionTable output
+  .DESCRIPTION
+    When run this command lists the .net Framework version as well as all of the information
+    found from the contents of $PSVersionTable
+  .EXAMPLE
+    Get-PSVersion
+    Shows all of the inforamtion from the $PSVersionTable variabe plus the .net Framework version
+  .NOTES
+    General notes
+      Created by: Brent Denny
+      Created on: 10 Dec 2020
+      Modified on: 10 Dec 2020
+  #>
+  [CmdletBinding()]
+  Param()
+  $FrameworkInfo = [System.Runtime.InteropServices.RuntimeInformation]::FrameworkDescription
+  $FrameworkVersion = ($FrameworkInfo -split '\s+')[-1]
+  $PSVersionTable | Select-Object -Property *,@{n='FrameworkVersion';e={$FrameworkVersion}}
+}
