@@ -58,3 +58,6 @@ $Voice = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $Voice.SelectVoiceByHints('Male')
 $Voice.Speak($WhatToSay)
 $Voice.Dispose()
+
+[Audio]::Mute = $true
+[Audio]::Volume = 0
