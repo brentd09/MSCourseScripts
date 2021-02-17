@@ -1,4 +1,18 @@
-﻿[CmdletBinding()]
+﻿<#
+.SYNOPSIS
+  Unmutes speker and sets volume to full before saying something
+.DESCRIPTION
+  Long description
+.EXAMPLE
+  Invoke-Command -ComputerName 'DDLS-1TJ2VG2' -FilePath C:\GIT\MSCourseScripts\VoiceSynth\Say-Something.ps1 -ArgumentList "Help I am trapped in Frank's computer"
+.INPUTS
+  Inputs (if any)
+.OUTPUTS
+  Output (if any)
+.NOTES
+  General notes
+#>
+[CmdletBinding()]
 Param (
   [Parameter(Mandatory=$true)]
   [string]$WhatToSay
