@@ -10,7 +10,7 @@
     Start-Talking -WhatToSay "I am speaking from a remote computer" -SendRemotely -ComputerName "Server1"
     Assuming the remoting is enabled, this command line will trigger a remote computer to say the sentence.
   .EXAMPLE
-    Start-Talking -WhatToSay "I am speking from within you local computer"
+    Start-Talking -WhatToSay "I am speaking from within you local computer"
     This command will have the local computer say the sentence
   .PARAMETER   
   .INPUTS
