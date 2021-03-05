@@ -51,20 +51,18 @@
     $MaxSubnetIndex = [math]::Pow(2,($SubnetMask-$InitialMask)) - 1
     $OctetIndex = [math]::Truncate($SubnetMask / 8)
     $JumpValue = [math]::Pow(2,(8-($SubnetMask % 8)))
-    [System.Collections.ArrayList]$InitJumpIPArray = @(0,0,0,0)
-    $InitJumpIPArray[$OctetIndex] = $JumpValue
-    $InitJumpIP = $InitJumpIPArray -join '.'
+    $HostBitsFill = 3 - $OctetIndex
+    $JumpDec = 256 * $HostBitsFill * $JumpValue
+    $JumpIPObj = ConvertTo-IPAddressObject -DecAddress $JumpDec
     $InitJumpObj = ConvertTo-IPAddressObject -IPAddress $InitJumpIP
+    $IPObj = ConvertTo-IPAddressObject -IPAddress $IPAddress
     foreach ($SubnetIndex in (0..$MaxSubnetIndex)) {
       $ThisJump = $JumpValue * $SubnetIndex 
-      [System.Collections.ArrayList]$JumpIPArray = @(0,0,0,0)
-      $JumpIPArray[$OctetIndex] = $ThisJump
-      $JumpIP = $JumpIPArray -join '.'
-      $JumpObj = ConvertTo-IPAddressObject -IPAddress $JumpIP
-      $IPObj = ConvertTo-IPAddressObject -IPAddress $IPAddress
-      $StartSubnetAddress = $IPObj.RevAddrIPObj.Address + $JumpObj.RevAddrIPObj.Address
-      $FirstValidIP = $IPObj.RevAddrIPObj.Address + $JumpObj.RevAddrIPObj.Address + 1
-      $LastValidIP = $IPObj.RevAddrIPObj.Address + $JumpObj.RevAddrIPObj.Address + $InitJumpObj.RevAddrIPObj.Address - 2
+      $ThisJumpDec = 256 * $HostBitsFill + ($JumpIPObj.RevAddrIPObj.Address * $SubnetIndex) -1
+      $ThisJumpObj = ConvertTo-IPAddressObject -DecAddress $ThisJumpDec
+      $StartSubnetAddress = $IPObj.RevAddrIPObj.Address + $ThisJumpObj.RevAddrIPObj.Address
+      $FirstValidIP = $IPObj.RevAddrIPObj.Address + $ThisJumpObj.RevAddrIPObj.Address + 1
+      $LastValidIP = $IPObj.RevAddrIPObj.Address + $ThisJumpObj.RevAddrIPObj.Address + $InitJumpObj.RevAddrIPObj.Address - 2
       $SubnetObj = ConvertTo-IPAddressObject -DecAddress $StartSubnetAddress
       $FirstIPObj = ConvertTo-IPAddressObject -IPAddress $FirstValidIP
       $LastIPObj  = ConvertTo-IPAddressObject -IPAddress $LastValidIP
@@ -118,9 +116,9 @@
     $IPaddressInfo = New-Object -TypeName psobject -Property $PropList
     #$IPaddressInfo
     foreach ($SubnettedBits in $IPaddressInfo.SubnetingBitsArray) {
-      Find-IPSubnetRange -IPAddress $IPaddressInfo.FixedInitIP.FwdAddrIPObj.IPAddressToString -InitialMask $IPaddressInfo.InitialCIDRMask -SubnetMask $SubnettedBits
+      Find-IPSubnetRange -IPAddress $SubnetID -InitialMask $IPaddressInfo.InitialCIDRMask -SubnetMask $SubnettedBits
     }
   }
 }
 
-Find-ValidSubnet -CIDRSubnetAddress 10.0.0.0/8 -SubnetsRequired 13 -HostsPerSubnetRequired 10 |  ft -groupby Mask
+Find-ValidSubnet -CIDRSubnetAddress 128.3.0.0/16 -SubnetsRequired 14 -HostsPerSubnetRequired 1000 |  ft -groupby Mask
