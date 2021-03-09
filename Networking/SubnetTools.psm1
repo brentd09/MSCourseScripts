@@ -127,24 +127,11 @@ function Build-ValidSubnet {
       Write-Warning "This is not the network address that matches this mask: $CIDRSubnetAddress"
       Write-Warning "We will use this instead $($FixedIPSet.FwdAddrIP)/$InitialMask"
     }
-    $PropList =[ordered]@{
-      SubnetsRequired    = $SubnetsRequired
-      HostsPerSubnet     = $HostsPerSubnetRequired
-      HostBitsRequired   = $HostBitsRequired
-      NetworkBitsRequired = $NetworkBitsRequired
-      InitialCIDRMask    = $InitialMask
-      InitialSubnetID    = $SubnetSet
-      InitialMask        = $MaskSet  
-      FixedInitIP        = $FixedIPSet
-      SubnetSolutions    = 33 - $TotalBitsRequired
-      SubnetingBitsArray = 0..(33 - $TotalBitsRequired -1) | ForEach-Object {
-        [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2)) + $_ + $InitialMask
-      }
+    $SubnetingBitsArray = 0..(32 - $TotalBitsRequired ) | ForEach-Object {
+      [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2)) + $_ + $InitialMask
     }
-    $IPaddressInfo = New-Object -TypeName psobject -Property $PropList
-    #$IPaddressInfo
-    foreach ($SubnettedBits in $IPaddressInfo.SubnetingBitsArray) {
-      Find-IPSubnetRange -IPAddress $SubnetID -InitialMask $IPaddressInfo.InitialCIDRMask -SubnetMask $SubnettedBits
+    foreach ($SubnettedBits in $SubnetingBitsArray) {
+      Find-IPSubnetRange -IPAddress $SubnetID -InitialMask $InitialMask -SubnetMask $SubnettedBits
     }
   }
 }
