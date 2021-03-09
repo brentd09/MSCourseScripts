@@ -97,6 +97,7 @@ function Build-ValidSubnet {
         FirstValidIP = $FirstValidSet.FwdAddrIP
         LastValidIP  = $LastValidSet.FwdAddrIP
         BroadcastIP  = $BroadCastSet.FwdAddrIP
+        HostsPerSubnet = [math]::Pow(2,32 -$SubnetMask) - 2
         Subnet       = $SubnetIndex + 1
       }
       New-Object -TypeName psobject -Property $ObjProp
