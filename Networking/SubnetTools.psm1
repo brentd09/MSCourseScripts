@@ -13,9 +13,9 @@ function Build-ValidSubnet {
       18 193.168.128.0 193.168.128.1 193.168.191.254 193.168.191.255          16382      3
       18 193.168.192.0 193.168.192.1 193.168.255.254 193.168.255.255          16382      4
 
-    It will also make sure the original network address is a network address and if it is not 
-    will AND it with the oiginal mask to find the network address. It is suggested that the output
-    be formated into a table with a -groupby Mask parameter. 
+    It will also make sure the original network address is a network address and if it is not it
+    will AND the given address with the oiginal mask to find the network address. 
+    It is suggested that the output be formated into a table with a -groupby Mask parameter. 
   .EXAMPLE
     Build-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
     Using the 192.168.0.0/16 network as a base this will find all subnet masks that will allow
@@ -26,8 +26,8 @@ function Build-ValidSubnet {
     In this format 192.168.0.0/16
   .PARAMETER SubnetsRequired
     This parameter declares how many subnets the CIDR network will need to be broken into as a minimum.
-    Because this is the minimum subnets this command will also look for more subnetsas long as it does
-    not impact the hosts per subnet -HostsPerSubnetRequired parameter value.
+    Because this is a minimum, this command will also look for all valid subnets as long as it still
+    allows for the number of hosts per subnet, -HostsPerSubnetRequired parameter value.
   .PARAMETER HostsPerSubnetRequired
     This parameter dictates the minimum amount of hosts that are required per subnet.
   .NOTES
@@ -56,7 +56,7 @@ function Build-ValidSubnet {
       [int64]$DecAddress
     )
     # this function will take a bit count, IPaddress or decimal address, and 
-    # convert them into an object that contains the forward and reverse versions 
+    # convert any of them into an object that contains a forward and reverse versions 
     # of the IPAddresses and their decimal values
     if ($PSCmdlet.ParameterSetName -eq 'Default') {
       $BinaryString = '1' * $BitCount + '0' * (32 - $BitCount)
@@ -100,8 +100,8 @@ function Build-ValidSubnet {
     $JumpIPAddressSet = ConvertTo-IPAddressObject -IPAddress $JumpIPAddr
     $IPAddressSet = ConvertTo-IPAddressObject -IPAddress $IPAddress
     foreach ($SubnetIndex in (0..$MaxSubnetIndex)) {
-      # The RevDec refers to the IP addresses decimal value, it turns out that the 
-      # [IPAddress] object reverses the Decimal value of the IP, so by reversing the
+      # The ...RevDec refers to the IP addresses decimal value, it 'turns out' that the 
+      # [IPAddress] object reverses the decimal value of the IP, so by reversing the
       # reverse we get the actual decimal value. This is why you see this everywhere 
       # within this function
       $ThisSubnetRevDec = $IPAddressSet.RevAddrDec + ($SubnetIndex * $JumpIPAddressSet.RevAddrDec)
@@ -132,6 +132,7 @@ function Build-ValidSubnet {
   $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2)) # +2 to cater for NetworkId and BroadcastID addresses
   $NetworkBitsRequired = [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2))
   $TotalBitsRequired = $InitialMask + $HostBitsRequired + $NetworkBitsRequired  
+  # Make sure the given IP addres is an IP Address 
   if ($CIDRSubnetAddress -notmatch '^([1-9][0-9]?|(?!127)1[0-9][0-9]?|2[0-2][0-3])\.(([0-9]|1[0-9][0-9]?|[1-9][0-9?]|2[0-5][0-5])\.){2}([0-9]|1[0-9][0-9]?|[1-9][0-9?]|2[0-5][0-5])\/([2-8]|[1-2][0-9]|30)$') {
     write-warning "$CIDRSubnetAddress - is not a valid address please enter the address and mask, for example: 164.12.0.0/16"
     break
@@ -143,15 +144,20 @@ function Build-ValidSubnet {
   else { 
     $MaskSet   = ConvertTo-IPAddressObject -BitCount $InitialMask
     $SubnetSet = ConvertTo-IPAddressObject -IPAddress $SubnetID
+    # ANDing the Network address with original mask to produce a real network address
+    # this is just in case an address that was entered was a host address and 
+    # not the network address.
     $NetBinAndMaskDec  = $SubnetSet.RevAddrDec -band $MaskSet.RevAddrDec
     # Fixed IP uses ANDing to make sure the subnet address is the actual address of the subnet and not a host address 
     # the subnet.
-    $FixedIPSet = ConvertTo-IPAddressObject -DecAddress $NetBinAndMaskDec
+    $ActualNetworkAddrSet = ConvertTo-IPAddressObject -DecAddress $NetBinAndMaskDec
     $SubnetingBitsArray = 0..(32 - $TotalBitsRequired ) | ForEach-Object {
+      # Finding how many subnet bits are required for the number of subnets requested
       [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2)) + $_ + $InitialMask
     }
     foreach ($SubnettedBits in $SubnetingBitsArray) {
-      Find-IPSubnetRange -IPAddress $FixedIPSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits
+      # Go find the valid subnet ranges per valid subnet mask
+      Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits
     }
   }
 }
