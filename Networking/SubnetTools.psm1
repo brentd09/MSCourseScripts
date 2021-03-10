@@ -3,8 +3,19 @@ function Build-ValidSubnet {
   .SYNOPSIS
     Takes an IPv4 network address and creates subnets based on hosts and networks needed 
   .DESCRIPTION
-    From the information regarding hosts per subnet and subnets required, this command will
-    create a list of all valid subnets that fit the stated criteria 
+    This command whill calculate all possible subnets for a given scenerio, given an 
+    orginal subnet and mask with the number of subnets required and the hosts per subnet.
+    For each subnet it will show all of the valid subnet range values for example:
+    Mask SubnetID      FirstValidIP  LastValidIP     BroadcastIP     HostsPerSubnet Subnet
+    ---- --------      ------------  -----------     -----------     -------------- ------
+      18 193.168.0.0   193.168.0.1   193.168.63.254  193.168.63.255           16382      1
+      18 193.168.64.0  193.168.64.1  193.168.127.254 193.168.127.255          16382      2
+      18 193.168.128.0 193.168.128.1 193.168.191.254 193.168.191.255          16382      3
+      18 193.168.192.0 193.168.192.1 193.168.255.254 193.168.255.255          16382      4
+
+    It will also make sure the original network address is a network address and if it is not 
+    will AND it with the oiginal mask to find the network address. It is suggested that the output
+    be formated into a table with a -groupby Mask parameter. 
   .EXAMPLE
     Build-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
     Using the 192.168.0.0/16 network as a base this will find all subnet masks that will allow
@@ -133,16 +144,15 @@ function Build-ValidSubnet {
     $MaskSet   = ConvertTo-IPAddressObject -BitCount $InitialMask
     $SubnetSet = ConvertTo-IPAddressObject -IPAddress $SubnetID
     $NetBinAndMaskDec  = $SubnetSet.RevAddrDec -band $MaskSet.RevAddrDec
-    $FixedIPSet = ConvertTo-IPAddressObject -DecAddress $NetBinAndMask
-    if ($NetBinAndMaskDec -ne $SubnetSet.RevAddrDec) {
-      Write-Warning "This is not the network address that matches this mask: $CIDRSubnetAddress"
-      Write-Warning "We will use this instead $($FixedIPSet.FwdAddrIP)/$InitialMask"
-    }
+    # Fixed IP uses ANDing to make sure the subnet address is the actual address of the subnet and not a host address 
+    # the subnet.
+    $FixedIPSet = ConvertTo-IPAddressObject -DecAddress $NetBinAndMaskDec
     $SubnetingBitsArray = 0..(32 - $TotalBitsRequired ) | ForEach-Object {
       [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2)) + $_ + $InitialMask
     }
     foreach ($SubnettedBits in $SubnetingBitsArray) {
-      Find-IPSubnetRange -IPAddress $SubnetID -InitialMask $InitialMask -SubnetMask $SubnettedBits
+      Find-IPSubnetRange -IPAddress $FixedIPSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits
     }
   }
 }
+
