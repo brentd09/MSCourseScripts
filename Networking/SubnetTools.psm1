@@ -1,4 +1,4 @@
-function Build-ValidSubnet {
+function Find-ValidSubnet {
   <#
   .SYNOPSIS
     Takes an IPv4 network address and creates subnets based on hosts and networks needed 
@@ -17,7 +17,7 @@ function Build-ValidSubnet {
     will AND the given address with the oiginal mask to find the network address. 
     It is suggested that the output be formated into a table with a -groupby Mask parameter. 
   .EXAMPLE
-    Build-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
+    Find-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
     Using the 192.168.0.0/16 network as a base this will find all subnet masks that will allow
     for a minimum of 4 subnets, while still allowing 4000 hosts per subnet. The subnets willl be
     listed for each subnet mask discovered
@@ -36,13 +36,13 @@ function Build-ValidSubnet {
       Created on:    09 Mar 2021
       Last Modified: 10 Mar 2021
   #>
-  [cmdletbinding()]
+  [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Position=0,Mandatory=$true)]
     [string]$CIDRSubnetAddress,
-    [Parameter(Mandatory=$true)]
+    [Parameter(Position=1,Mandatory=$true)]
     [int]$SubnetsRequired,
-    [Parameter(Mandatory=$true)]
+    [Parameter(Position=2,Mandatory=$true)]
     [int]$HostsPerSubnetRequired
   )
 
