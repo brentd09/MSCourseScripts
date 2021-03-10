@@ -8,20 +8,21 @@ function Build-ValidSubnet {
   .EXAMPLE
     Build-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
     Using the 192.168.0.0/16 network as a base this will find all subnet masks that will allow
-    for 4 subnets minimum while still allowing 4000 hosts per subnet. The subnets willl be
+    for a minimum of 4 subnets, while still allowing 4000 hosts per subnet. The subnets willl be
     listed for each subnet mask discovered
   .PARAMETER CIDRSubnetAddress
-    This parameter requires the network address to be entered with the CIDR mask as well. 192.168.0.0/16
+    This parameter requires the network address to be entered with the CIDR mask as well. 
+    In this format 192.168.0.0/16
   .PARAMETER SubnetsRequired
     This parameter declares how many subnets the CIDR network will need to be broken into as a minimum.
-    This command will show other subnets that allow for more subnets as long as it will not impact the
-    -HostsPerSubnetRequired parameter value.
+    Because this is the minimum subnets this command will also look for more subnetsas long as it does
+    not impact the hosts per subnet -HostsPerSubnetRequired parameter value.
   .PARAMETER HostsPerSubnetRequired
     This parameter dictates the minimum amount of hosts that are required per subnet.
   .NOTES
     General notes
-      Created by: Brent Denny
-      Created on: 10 Mar 2021
+      Created by:    Brent Denny
+      Created on:    09 Mar 2021
       Last Modified: 10 Mar 2021
   #>
   [cmdletbinding()]
@@ -43,6 +44,9 @@ function Build-ValidSubnet {
       [Parameter(ParameterSetName='DecAddress')]
       [int64]$DecAddress
     )
+    # this function will take a bit count, IPaddress or decimal address, and 
+    # convert them into an object that contains the forward and reverse versions 
+    # of the IPAddresses and their decimal values
     if ($PSCmdlet.ParameterSetName -eq 'Default') {
       $BinaryString = '1' * $BitCount + '0' * (32 - $BitCount)
       $IPObj = [ipaddress]([convert]::ToInt64($BinaryString,2))
@@ -74,6 +78,8 @@ function Build-ValidSubnet {
       [int]$InitialMask,
       [int]$SubnetMask
     )
+    # This function will find all of the valid subnets for a subnetted mask, and list the following
+    # Mask,Subnet,FirstValidIP,LastValidIP,BroadcastIP,HostsPerSubnet and Subnet Number
     $MaxSubnetIndex = [math]::Pow(2,$SubnetMask - $InitialMask) - 1
     $JumpValue = [math]::Pow(2,8-$SubnetMask % 8)
     $JumpIndex = [math]::Truncate($SubnetMask / 8)
@@ -83,14 +89,18 @@ function Build-ValidSubnet {
     $JumpIPAddressSet = ConvertTo-IPAddressObject -IPAddress $JumpIPAddr
     $IPAddressSet = ConvertTo-IPAddressObject -IPAddress $IPAddress
     foreach ($SubnetIndex in (0..$MaxSubnetIndex)) {
-      $ThisSubnetDec = $IPAddressSet.RevAddrDec + ($SubnetIndex * $JumpIPAddressSet.RevAddrDec)
-      $ThisSubnetSet = ConvertTo-IPAddressObject -DecAddress $ThisSubnetDec
-      $FirstValidDec = $ThisSubnetDec + 1
-      $LastValidDec  = $ThisSubnetDec + $JumpIPAddressSet.RevAddrDec - 2
-      $BroadCastDec  = $ThisSubnetDec + $JumpIPAddressSet.RevAddrDec - 1
-      $FirstValidSet = ConvertTo-IPAddressObject -DecAddress $FirstValidDec
-      $LastValidSet = ConvertTo-IPAddressObject -DecAddress $LastValidDec
-      $BroadCastSet = ConvertTo-IPAddressObject -DecAddress $BroadCastDec
+      # The RevDec refers to the IP addresses decimal value, it turns out that the 
+      # [IPAddress] object reverses the Decimal value of the IP, so by reversing the
+      # reverse we get the actual decimal value. This is why you see this everywhere 
+      # within this function
+      $ThisSubnetRevDec = $IPAddressSet.RevAddrDec + ($SubnetIndex * $JumpIPAddressSet.RevAddrDec)
+      $ThisSubnetSet = ConvertTo-IPAddressObject -DecAddress $ThisSubnetRevDec
+      $FirstValidRevDec = $ThisSubnetRevDec + 1
+      $LastValidRevDec  = $ThisSubnetRevDec + $JumpIPAddressSet.RevAddrDec - 2
+      $BroadCastRevDec  = $ThisSubnetRevDec + $JumpIPAddressSet.RevAddrDec - 1
+      $FirstValidSet = ConvertTo-IPAddressObject -DecAddress $FirstValidRevDec
+      $LastValidSet = ConvertTo-IPAddressObject -DecAddress $LastValidRevDec
+      $BroadCastSet = ConvertTo-IPAddressObject -DecAddress $BroadCastRevDec
       $ObjProp = [ordered]@{
         Mask         = $SubnetMask
         SubnetID     = $ThisSubnetSet.FwdAddrIP
