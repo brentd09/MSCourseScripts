@@ -58,11 +58,8 @@ function Find-ValidSubnet {
   Param (
     [Parameter(Mandatory=$true)]
     [string]$CIDRSubnetAddress,
-    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
-    [int]$SubnetsRequired,
-    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
-    [int]$HostsPerSubnetRequired,
-    [Parameter(ParameterSetName='Subnet')]
+    [int]$SubnetsRequired = 1,
+    [int]$HostsPerSubnetRequired = 1,
     [switch]$SmallestSubnets,
     [Parameter(ParameterSetName='VLSM')]
     [switch]$AllSubnetsVLSM
