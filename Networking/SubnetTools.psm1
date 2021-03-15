@@ -95,6 +95,10 @@ function Find-ValidSubnet {
     $MaxSubnetIndex = [math]::Pow(2,$SubnetMask - $InitialMask) - 1
     $JumpValue = [math]::Pow(2,8-$SubnetMask % 8)
     $JumpIndex = [math]::Truncate($SubnetMask / 8)
+    if ($JumpValue -eq 256) {
+      $JumpValue = 1
+      $JumpIndex = $JumpIndex - 1
+    }
     [int[]]$JumpIPArray = 0,0,0,0
     $JumpIPArray[$JumpIndex] = $JumpValue
     $JumpIPAddr = $JumpIPArray -join '.' 
@@ -135,7 +139,7 @@ function Find-ValidSubnet {
   $NetworkBitsRequired = [math]::Floor([math]::Log($SubnetsRequired)/[math]::log(2))
   $TotalBitsRequired = $InitialMask + $HostBitsRequired + $NetworkBitsRequired  
   # Make sure the given IP addres is an IP Address 
-  if ($CIDRSubnetAddress -notmatch '^([1-9][0-9]?|(?!127)1[0-9][0-9]?|2[0-2][0-3])(\.([0-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])){3}$\/([2-8]|[1-2][0-9]|30)$') {
+  if ($CIDRSubnetAddress -notmatch '^([1-9]|[1-9][0-9]|1[01][0-9]|12[0-6]|12[89]|1[3-9][0-9]|2[0-2][0-3])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}\/([2-9]|[12][0-9]|30)$') {
     write-warning "$CIDRSubnetAddress - is not a valid address please enter the address and mask, for example: 164.12.0.0/16"
     break
   }
