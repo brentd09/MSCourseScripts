@@ -56,10 +56,14 @@ function Find-ValidSubnet {
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
+    [Parameter(ParameterSetName='VLSM')]
     [string]$CIDRSubnetAddress,
-    [int]$SubnetsRequired = 1,
-    [int]$HostsPerSubnetRequired = 1,
+    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
+    [int]$SubnetsRequired,
+    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
+    [int]$HostsPerSubnetRequired,
+    [Parameter(ParameterSetName='Subnet')]
     [switch]$SmallestSubnets,
     [Parameter(ParameterSetName='VLSM')]
     [switch]$AllSubnetsVLSM
