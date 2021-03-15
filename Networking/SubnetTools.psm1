@@ -43,7 +43,8 @@ function Find-ValidSubnet {
     [Parameter(Position=1,Mandatory=$true)]
     [int]$SubnetsRequired,
     [Parameter(Position=2,Mandatory=$true)]
-    [int]$HostsPerSubnetRequired
+    [int]$HostsPerSubnetRequired,
+    [switch]$SmallestSubnets
   )
 
   function ConvertTo-IPAddressObject {
@@ -113,13 +114,14 @@ function Find-ValidSubnet {
       $LastValidSet = ConvertTo-IPAddressObject -DecAddress $LastValidRevDec
       $BroadCastSet = ConvertTo-IPAddressObject -DecAddress $BroadCastRevDec
       $ObjProp = [ordered]@{
-        Mask         = $SubnetMask
-        SubnetID     = $ThisSubnetSet.FwdAddrIP
-        FirstValidIP = $FirstValidSet.FwdAddrIP
-        LastValidIP  = $LastValidSet.FwdAddrIP
-        BroadcastIP  = $BroadCastSet.FwdAddrIP
+        Mask           = $SubnetMask
+        SubnetID       = $ThisSubnetSet.FwdAddrIP
+        FirstValidIP   = $FirstValidSet.FwdAddrIP
+        LastValidIP    = $LastValidSet.FwdAddrIP
+        BroadcastIP    = $BroadCastSet.FwdAddrIP
         HostsPerSubnet = [math]::Pow(2,32 -$SubnetMask) - 2
-        Subnet       = $SubnetIndex + 1
+        Subnet         = $SubnetIndex + 1
+        TotalSubnets   = $MaxSubnetIndex + 1
       }
       New-Object -TypeName psobject -Property $ObjProp
     } 
@@ -130,10 +132,10 @@ function Find-ValidSubnet {
   $SubnetID     = $CIDRParts[0] -as [string]
   $InitialMask  = $CIDRParts[1] -as [int]
   $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2)) # +2 to cater for NetworkId and BroadcastID addresses
-  $NetworkBitsRequired = [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2))
+  $NetworkBitsRequired = [math]::Floor([math]::Log($SubnetsRequired)/[math]::log(2))
   $TotalBitsRequired = $InitialMask + $HostBitsRequired + $NetworkBitsRequired  
   # Make sure the given IP addres is an IP Address 
-  if ($CIDRSubnetAddress -notmatch '^([1-9][0-9]?|(?!127)1[0-9][0-9]?|2[0-2][0-3])\.(([0-9]|1[0-9][0-9]?|[1-9][0-9?]|2[0-5][0-5])\.){2}([0-9]|1[0-9][0-9]?|[1-9][0-9?]|2[0-5][0-5])\/([2-8]|[1-2][0-9]|30)$') {
+  if ($CIDRSubnetAddress -notmatch '^([1-9][0-9]?|(?!127)1[0-9][0-9]?|2[0-2][0-3])\.(([0-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){2}([0-9][0-9]?|1[0-9]{2}|2[0-4][0-9]|25[0-5])\/([2-8]|[1-2][0-9]|30)$') {
     write-warning "$CIDRSubnetAddress - is not a valid address please enter the address and mask, for example: 164.12.0.0/16"
     break
   }
@@ -155,10 +157,28 @@ function Find-ValidSubnet {
       # Finding how many subnet bits are required for the number of subnets requested
       [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2)) + $_ + $InitialMask
     }
-    foreach ($SubnettedBits in $SubnetingBitsArray) {
+    $SubnetResults = foreach ($SubnettedBits in $SubnetingBitsArray) {
       # Go find the valid subnet ranges per valid subnet mask
       Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits
     }
+    if ($SmallestSubnets -eq $false) {$SubnetResults}
+    else {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
   }
 }
 
+function Find-VLSMSolution {
+  param (
+    [Parameter(Position=0,Mandatory=$true)]
+    [string]$CIDRSubnetAddress,
+    [int[]]$HostsForEachSubnet
+  )
+  $MaxHostsIndex = $HostsForEachSubnet.Count - 1
+  $SortedHostsArray =  $HostsForEachSubnet | Sort-Object -Descending
+  ForEach ($Index in (0..$MaxHostsIndex)) {
+    if ($_ -lt $MaxSubnetIndex) {
+     $SubnetResults = Find-ValidSubnet -CIDRSubnetAddress $CIDRSubnetAddress -SubnetsRequired 2 -HostsPerSubnetRequired $HostsForEachSubnet[$Index] |
+       Where-Object {$_.MaxSubnets -gt 2}
+
+    }
+  } 
+}
