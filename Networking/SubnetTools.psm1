@@ -6,12 +6,22 @@ function Find-ValidSubnet {
     This command whill calculate all possible subnets for a given scenerio, given an 
     orginal subnet and mask with the number of subnets required and the hosts per subnet.
     For each subnet it will show all of the valid subnet range values for example:
-    Mask SubnetID      FirstValidIP  LastValidIP     BroadcastIP     HostsPerSubnet Subnet
-    ---- --------      ------------  -----------     -----------     -------------- ------
-      18 193.168.0.0   193.168.0.1   193.168.63.254  193.168.63.255           16382      1
-      18 193.168.64.0  193.168.64.1  193.168.127.254 193.168.127.255          16382      2
-      18 193.168.128.0 193.168.128.1 193.168.191.254 193.168.191.255          16382      3
-      18 193.168.192.0 193.168.192.1 193.168.255.254 193.168.255.255          16382      4
+
+    Find-ValidSubnet -CIDRSubnetAddress 192.168.3.0/24 -AllSubnetsVLSM | ft -GroupBy mask 
+
+    Mask: 25
+    Mask SubnetID      FirstValidIP  LastValidIP   BroadcastIP   HostsPerSubnet Subnet TotalSubnets
+    ---- --------      ------------  -----------   -----------   -------------- ------ ------------
+      25 192.168.3.0   192.168.3.1   192.168.3.126 192.168.3.127            126      1            2
+      25 192.168.3.128 192.168.3.129 192.168.3.254 192.168.3.255            126      2            2
+
+    Mask: 26
+    Mask SubnetID      FirstValidIP  LastValidIP   BroadcastIP   HostsPerSubnet Subnet TotalSubnets
+    ---- --------      ------------  -----------   -----------   -------------- ------ ------------
+      26 192.168.3.0   192.168.3.1   192.168.3.62  192.168.3.63              62      1            4
+      26 192.168.3.64  192.168.3.65  192.168.3.126 192.168.3.127             62      2            4
+      26 192.168.3.128 192.168.3.129 192.168.3.190 192.168.3.191             62      3            4
+      26 192.168.3.192 192.168.3.193 192.168.3.254 192.168.3.255             62      4            4
 
     It will also make sure the original network address is a network address and if it is not it
     will AND the given address with the oiginal mask to find the network address. 
