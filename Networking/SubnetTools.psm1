@@ -21,6 +21,10 @@ function Find-ValidSubnet {
     Using the 192.168.0.0/16 network as a base this will find all subnet masks that will allow
     for a minimum of 4 subnets, while still allowing 4000 hosts per subnet. The subnets willl be
     listed for each subnet mask discovered
+  .EXAMPLE
+    Find-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -AllSubnetsVLSM | Format-Table -GroupBy Mask
+    Using the 192.168.0.0/16 network as a base this will find all subnets that are possible, this is very
+    handy when trying to plan VLSM subnets.
   .PARAMETER CIDRSubnetAddress
     This parameter requires the network address to be entered with the CIDR mask as well. 
     In this format 192.168.0.0/16
@@ -30,11 +34,15 @@ function Find-ValidSubnet {
     allows for the number of hosts per subnet, -HostsPerSubnetRequired parameter value.
   .PARAMETER HostsPerSubnetRequired
     This parameter dictates the minimum amount of hosts that are required per subnet.
+  .PARAMETER SmallestSubnets
+    This parameter only shows the smallest subnets, those with the bigest subnet mask.
+  .PARAMETER AllSubnetsVLSM
+    This parameter show all possible subnets which can be very handy when planning VLSM subnets.
   .NOTES
     General notes
       Created by:    Brent Denny
       Created on:    09 Mar 2021
-      Last Modified: 10 Mar 2021
+      Last Modified: 15 Mar 2021
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
