@@ -62,6 +62,7 @@ function Find-ValidSubnet {
     [int]$SubnetsRequired,
     [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
     [int]$HostsPerSubnetRequired,
+    [Parameter(ParameterSetName='Subnet')]
     [switch]$SmallestSubnets,
     [Parameter(ParameterSetName='VLSM')]
     [switch]$AllSubnetsVLSM
