@@ -11,36 +11,36 @@ function Find-ValidSubnet {
     
     This is a basic example:
 
-  Find-ValidSubnet -CIDRSubnetAddress 192.100.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 6000 | Format-Table -GroupBy Mask
+  Find-ValidSubnet -CIDRSubnetAddress 172.16.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 6000 | Format-Table -GroupBy Mask
   
      Mask: 18
   
   Mask SubnetID      FirstValidIP  LastValidIP     BroadcastIP     HostsPerSubnet Subnet TotalSubnets
   ---- --------      ------------  -----------     -----------     -------------- ------ ------------
-    18 192.100.0.0   192.100.0.1   192.100.63.254  192.100.63.255           16382      1            4
-    18 192.100.64.0  192.100.64.1  192.100.127.254 192.100.127.255          16382      2            4
-    18 192.100.128.0 192.100.128.1 192.100.191.254 192.100.191.255          16382      3            4
-    18 192.100.192.0 192.100.192.1 192.100.255.254 192.100.255.255          16382      4            4
+    18 172.16.0.0   172.16.0.1   172.16.63.254  172.16.63.255           16382      1            4
+    18 172.16.64.0  172.16.64.1  172.16.127.254 172.16.127.255          16382      2            4
+    18 172.16.128.0 172.16.128.1 172.16.191.254 172.16.191.255          16382      3            4
+    18 172.16.192.0 172.16.192.1 172.16.255.254 172.16.255.255          16382      4            4
   
      Mask: 19
   
   Mask SubnetID      FirstValidIP  LastValidIP     BroadcastIP     HostsPerSubnet Subnet TotalSubnets
   ---- --------      ------------  -----------     -----------     -------------- ------ ------------
-    19 192.100.0.0   192.100.0.1   192.100.31.254  192.100.31.255            8190      1            8
-    19 192.100.32.0  192.100.32.1  192.100.63.254  192.100.63.255            8190      2            8
-    19 192.100.64.0  192.100.64.1  192.100.95.254  192.100.95.255            8190      3            8
-    19 192.100.96.0  192.100.96.1  192.100.127.254 192.100.127.255           8190      4            8
-    19 192.100.128.0 192.100.128.1 192.100.159.254 192.100.159.255           8190      5            8
-    19 192.100.160.0 192.100.160.1 192.100.191.254 192.100.191.255           8190      6            8
-    19 192.100.192.0 192.100.192.1 192.100.223.254 192.100.223.255           8190      7            8
-    19 192.100.224.0 192.100.224.1 192.100.255.254 192.100.255.255           8190      8            8
+    19 172.16.0.0   172.16.0.1   172.16.31.254  172.16.31.255            8190      1            8
+    19 172.16.32.0  172.16.32.1  172.16.63.254  172.16.63.255            8190      2            8
+    19 172.16.64.0  172.16.64.1  172.16.95.254  172.16.95.255            8190      3            8
+    19 172.16.96.0  172.16.96.1  172.16.127.254 172.16.127.255           8190      4            8
+    19 172.16.128.0 172.16.128.1 172.16.159.254 172.16.159.255           8190      5            8
+    19 172.16.160.0 172.16.160.1 172.16.191.254 172.16.191.255           8190      6            8
+    19 172.16.192.0 172.16.192.1 172.16.223.254 172.16.223.255           8190      7            8
+    19 172.16.224.0 172.16.224.1 172.16.255.254 172.16.255.255           8190      8            8
 
     It will also make sure the original network address is a network address and if it is not it
     will AND the given address with the oiginal mask to find the network address. 
     It is suggested that the output be formated into a table with a -groupby Mask parameter. 
   .EXAMPLE
-    Find-ValidSubnet -CIDRSubnetAddress 192.168.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
-    Using the 192.168.0.0/16 network as a base this will find all subnet masks that will allow
+    Find-ValidSubnet -CIDRSubnetAddress 172.16.0.0/16 -SubnetsRequired 4 -HostsPerSubnetRequired 4000  | Format-Table -GroupBy Mask
+    Using the 172.16.0.0/16 network as a base this will find all subnet masks that will allow
     for a minimum of 4 subnets, while still allowing 4000 hosts per subnet. The subnets willl be
     listed for each subnet mask discovered
   .EXAMPLE
@@ -49,7 +49,7 @@ function Find-ValidSubnet {
     handy when trying to plan VLSM subnets.
   .PARAMETER CIDRSubnetAddress
     This parameter requires the network address to be entered with the CIDR mask as well. 
-    In this format 192.168.0.0/16
+    In this format 172.16.0.0/16
   .PARAMETER SubnetsRequired
     This parameter declares how many subnets the CIDR network will need to be broken into as a minimum.
     Because this is a minimum, this command will also look for all valid subnets as long as it still
@@ -65,7 +65,7 @@ function Find-ValidSubnet {
       Created by:    Brent Denny
       Created on:    09 Mar 2021
       Last Modified: 16 Mar 2021
-      Version:       0.9.2
+      Version:       0.9.3
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
