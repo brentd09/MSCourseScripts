@@ -38,13 +38,15 @@ function Find-ValidSubnet {
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
-    [Parameter(Position=0,Mandatory=$true)]
+    [Parameter(Mandatory=$true)]
     [string]$CIDRSubnetAddress,
-    [Parameter(Position=1,Mandatory=$true)]
+    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
     [int]$SubnetsRequired,
-    [Parameter(Position=2,Mandatory=$true)]
+    [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
     [int]$HostsPerSubnetRequired,
-    [switch]$SmallestSubnets
+    [switch]$SmallestSubnets,
+    [Parameter(ParameterSetName='VLSM')]
+    [switch]$AllSubnetsVLSM
   )
 
   function ConvertTo-IPAddressObject {
@@ -132,6 +134,10 @@ function Find-ValidSubnet {
   }
 
   ## MAIN Function BODY
+  if ($AllSubnetsVLSM -eq $true) {
+    $SubnetsRequired = 1
+    $HostsPerSubnetRequired = 1
+  }
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
   $SubnetID     = $CIDRParts[0] -as [string]
   $InitialMask  = $CIDRParts[1] -as [int]
@@ -168,21 +174,4 @@ function Find-ValidSubnet {
     if ($SmallestSubnets -eq $false) {$SubnetResults}
     else {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
   }
-}
-
-function Find-VLSMSolution {
-  param (
-    [Parameter(Position=0,Mandatory=$true)]
-    [string]$CIDRSubnetAddress,
-    [int[]]$HostsForEachSubnet
-  )
-  $MaxHostsIndex = $HostsForEachSubnet.Count - 1
-  $SortedHostsArray =  $HostsForEachSubnet | Sort-Object -Descending
-  ForEach ($Index in (0..$MaxHostsIndex)) {
-    if ($_ -lt $MaxSubnetIndex) {
-     $SubnetResults = Find-ValidSubnet -CIDRSubnetAddress $CIDRSubnetAddress -SubnetsRequired 2 -HostsPerSubnetRequired $HostsForEachSubnet[$Index] |
-       Where-Object {$_.MaxSubnets -gt 2}
-
-    }
-  } 
 }
