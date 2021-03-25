@@ -179,7 +179,7 @@ function Find-ValidSubnet {
   if ($PSCmdlet.ParameterSetName -eq 'VLSM' -and  $CIDRSubnetAddress -eq '') {$BadEntry = $true}
   elseif ($CIDRSubnetAddress -eq '' -or $SubnetsRequired -eq 0 -or $SubnetsRequired -gt 22 -or $HostsPerSubnetRequired -gt 16777214) {$BadEntry = $true}
   if ($BadEntry -eq $true) {
-    Write-Warning "Invalid or incomplete information was entered for this command, Please use Get-Help -Full $($MyInvocation.InvocationName)" 
+    Write-Warning "Invalid or incomplete information was entered for this command, Please use Get-Help -Full $($MyInvocation.InvocationName) to learn more about how to run this command" 
     break
   }
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
