@@ -338,19 +338,29 @@ function Convert-CIDRMask {
   .PARAMETER CIDRMask
     Enter an integer for the CIDR subnet mask, for example if the mask is 255.255.240.0 the 
     mask you would enter would be 20.
+  .PARAMETER IPV4Mask
+    Enter an IPV4 subnet mask, for example 255.255.240.0 
   .NOTES
     General notes
       Created  by: Brent Denny
       Created  on: 25 Mar 2021
       Modified on: 25 Mar 2021
   #>
+  [cmdletbinding(DefaultParameterSetName='default')]
   Param (
-    [int]$CIDRMask
+    [Parameter(ParameterSetName='CIDR')]
+    [int]$CIDRMask,
+    [Parameter(ParameterSetName='IP')]
+    [string]$IPV4Mask
   )
-  $IPAddrInfo = Show-IPFwdAndRev -CIDRMask $CIDRMask
-  $JumpRevDec = (Show-IPFwdAndRev -CIDRMask ($CIDRMask)).RevDecIP - (Show-IPFwdAndRev -CIDRMask ($CIDRMask-1)).RevDecIP 
-  $JumpInfo   = Show-IPFwdAndRev -RevDecIP $JumpRevDec 
-  $JumpVal = [math]::Pow(2,(8-($CIDRMask % 8)))
+  if ($PSCmdlet.ParameterSetName -eq 'IP') {
+    $Binary = (Show-IPFwdAndRev -FwdIPAddress $IPV4Mask).FwdBinary
+    $CIDRMask = ($Binary -replace '^(1+)0+$','$1').length
+  }
+    $IPAddrInfo = Show-IPFwdAndRev -CIDRMask $CIDRMask
+    $JumpRevDec = (Show-IPFwdAndRev -CIDRMask ($CIDRMask)).RevDecIP - (Show-IPFwdAndRev -CIDRMask ($CIDRMask-1)).RevDecIP 
+    $JumpInfo   = Show-IPFwdAndRev -RevDecIP $JumpRevDec 
+    $JumpVal = [math]::Pow(2,(8-($CIDRMask % 8)))
   $FnObjProp = [ordered]@{
     CidrMask       = $CIDRMask
     BinaryMask     = $IPAddrInfo.FwdBinary
@@ -367,3 +377,38 @@ function Convert-CIDRMask {
   New-Object -TypeName psobject -Property $FnObjProp
 }
 
+function New-SubnetPSSessions {
+  <#
+  .SYNOPSIS
+    Creates PS Sessions with every host in subnet
+  .DESCRIPTION
+    Creates PS sessions with all machines that are in the subnet
+  .EXAMPLE
+    New-SubnetPSSessions
+    After the command runs use $Sessions = Get-PSSession to collect the sessions into a single variable
+  .NOTES
+    General notes
+      Created  by: Brent Denny
+      Created  on: 25 Mar 2021
+      Modified on: 25 Mar 2021
+  #>
+  Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value * -Force
+  $MyIp = ((ipconfig /all).trim() |  Select-String -Pattern '^IPV4 Address' ) -replace '(^.+\:\s|\(Preferred\))','' | Sort-Object @{e={($_ -replace '.*\.','') -as [int] }}
+  $MySubnetMask = ((ipconfig /all).trim() |  Select-String -Pattern '^Subnet Mask' ) -replace '^.+\:\s','' 
+  $IPRawText = (ipconfig /all).trim() |  Select-String -Pattern '^(DHCP Server|Default Gateway|DNS Servers|IPV4 Address)' 
+  $IPArrayToExclude = $IPRawText -replace '(^.+\:\s|\(Preferred\))','' | Sort-Object @{e={($_ -replace '.*\.','') -as [int] }}
+  $Mask = (ConvertTo-IPAddressObject -IPAddress $MySubnetMask).CIDRMask
+  $MaskFormats = Convert-CIDRMask -CIDRMask $Mask
+  $JumpSize = $MaskFormats.JumpValue
+  $ValidIPJump = $JumpSize - 2
+  $IP = [ipaddress]$MyIp
+  $DecSubnetID = $IP.Address -band $MaskFormats.DecimalRevMask
+  $SubnetIDIP = Show-IPFwdAndRev -FwdIPAddress ([ipaddress]$DecSubnetID).IPAddressToString
+  $FirstDecIP = [ipaddress](1 + $SubnetIDIP.FwdDecIP)
+  $FirstIP = Show-IPFwdAndRev -RevIPAddress $FirstDecIP.IPAddressToString
+  $ClassRoomIPs = foreach ($LastOctet in (1..$ValidIPJump)) {
+    $NewIP = $FirstIP.ForwardIP -replace '\.\d{1,3}$',".$LastOctet"
+    if ($NewIP -notin $IPArrayToExclude) { $NewIP }
+  }
+  New-PSSession -ComputerName $ClassRoomIPs *> $null
+}
