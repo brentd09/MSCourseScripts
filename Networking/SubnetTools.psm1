@@ -208,3 +208,162 @@ function Find-ValidSubnet {
     else {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
   }
 }
+
+function Show-IPFwdAndRev {
+  <#
+  .SYNOPSIS
+    Given an IP address in one of different forms it shows forward and reverse IP address information
+  .DESCRIPTION
+    You can enter the IP address in one of five forms:
+      Reverse IP Address
+      Forward IP Address
+      Reverse Decimal IP Address
+      Forward Decimal IP Address
+      CIDR Mask integer
+  .EXAMPLE
+    Show-IPFwdAndRev -FwdIPAddress 192.168.20.13
+    This will show the following information:
+     ForwardIP : 192.168.20.13
+     FwdDecIP  : 3232240653
+     FwdBinary : 11000000101010000001010000001101
+     ReverseIP : 13.20.168.192
+     RevDecIP  : 219457728
+     RevBinary : 00001101000101001010100011000000
+  .PARAMETER RevIPAddress
+    This will take an IP that has been reversed and show all forms of that IP address
+  .PARAMETER FwdIPAddress
+    This will take an IP and show all forms of that IP address
+  .PARAMETER FwdDecIP
+    This will take the decimal equivilent of the IP address and show all forms of the IP address
+  .PARAMETER RevDecIP
+    This will take the reverse decimal equivilent of the IP address and show all forms of the IP address
+  .PARAMETER CIDRMask
+    This will take a CIDR Mask integer and show it in all the address forms
+  .NOTES
+    General notes
+      Created  by: Brent Denny
+      Created  on: 25 Mar 2021
+      Modified on: 25 Mar 2021
+  #>
+  [CmdletBinding(DefaultParameterSetName='Default')]
+  Param (
+    [Parameter(ParameterSetName='ReverseIP')]
+    [string]$RevIPAddress,
+    [Parameter(ParameterSetName='ForwardIP')]
+    [string]$FwdIPAddress,
+    [Parameter(ParameterSetName='ForwardDecIP')]
+    [string]$FwdDecIP,
+    [Parameter(ParameterSetName='ReverseDecIP')]
+    [string]$RevDecIP,
+    [Parameter(ParameterSetName='CIDRMask')]
+    [int]$CIDRMask
+  )
+
+  if ($PSCmdlet.ParameterSetName -eq 'ReverseIP') {
+    $IPOctetsArray = $RevIPAddress -split '\.'
+    $FwdArray = 3..0
+    $RevArray = 0..3
+  }
+  elseif ($PSCmdlet.ParameterSetName -eq 'ForwardIP')  {
+    $IPOctetsArray = $FwdIPAddress -split '\.'
+    $FwdArray = 0..3
+    $RevArray = 3..0
+  }
+  elseif ($PSCmdlet.ParameterSetName -eq 'ForwardDecIP') {
+    $IPObj = [ipaddress]$FwdDecIP
+    $IPOctetsArray = $IPObj.IPAddressToString -split '\.'
+    $FwdArray = 0..3
+    $RevArray = 3..0
+  }
+  elseif ($PSCmdlet.ParameterSetName -eq 'ReverseDecIP') {
+    $IPObj = [ipaddress]$RevDecIP
+    $IPOctetsArray = $IPObj.IPAddressToString -split '\.'
+    $FwdArray = 3..0
+    $RevArray = 0..3    
+  }
+  elseif ($PSCmdlet.ParameterSetName -eq 'CIDRMask') {
+    $BinaryMask    = ('1' * $CIDRMask) + ('0' * (32 - $CIDRMask))
+    $DecimalMask   = [convert]::ToInt64($BinaryMask,2)
+    $IPObj = [ipaddress]$DecimalMask
+    $IPOctetsArray = $IPObj.IPAddressToString -split '\.'
+    $FwdArray = 3..0
+    $RevArray = 0..3    
+  }
+  $FwdIP = $IPOctetsArray[$FwdArray] -join '.'
+  $FwdBinary = ($FwdArray | ForEach-Object {
+    $Bin = [convert]::ToString($IPOctetsArray[$_],2)
+    ('0' * (8 - $Bin.Length)) + $Bin
+  }) -join ''
+  $RevIP = $IPOctetsArray[$RevArray] -join '.'
+  $RevBinary = ($RevArray | ForEach-Object {
+    $Bin = [convert]::ToString($IPOctetsArray[$_],2)
+    ('0' * (8 - $Bin.Length)) + $Bin
+  }) -join ''
+  $FnObjProp = [ordered]@{
+    ForwardIP = $FwdIP
+    FwdDecIP  = ([ipaddress]$RevIP).Address
+    FwdBinary = $FwdBinary
+    ReverseIP = $RevIP
+    RevDecIP  = ([ipaddress]$FwdIP).Address
+    RevBinary = $RevBinary
+  }
+  New-Object -TypeName psobject -Property $FnObjProp
+}
+
+function Convert-CIDRMask {
+  <#
+  .SYNOPSIS
+    Takes a CIDR subnet mask integer and displays it in many different formats
+  .DESCRIPTION
+    Using the CIDR mask provided, this will convert it to the following formats:
+      CIDR Mask
+      Binary Mask
+      IPV4 Mask (forward and reverse)
+      Decimal Mask (forward and reverse)
+      Jump information (the count from subnet to subnet)
+  .EXAMPLE
+    Convert-CIDRMask -CIDRMask 20
+    This would produce this output, the reverse values are useful in PowerShell IP calulations
+      CidrMask       : 20
+      BinaryMask     : 11111111111111111111000000000000
+      IPv4FwdMask    : 255.255.240.0
+      DecimalFwdMask : 4294963200
+      IPv4RevMask    : 0.240.255.255
+      DecimalRevMask : 15794175
+      JumpIPs        : 0.0.16.0
+      JumpDecIP      : 4096
+      JumpRevIPs     : 0.16.0.0
+      JumpDecRevIP   : 1048576
+      JumpValue      : 16
+  .PARAMETER CIDRMask
+    Enter an integer for the CIDR subnet mask, for example if the mask is 255.255.240.0 the 
+    mask you would enter would be 20.
+  .NOTES
+    General notes
+      Created  by: Brent Denny
+      Created  on: 25 Mar 2021
+      Modified on: 25 Mar 2021
+  #>
+  Param (
+    [int]$CIDRMask
+  )
+  $IPAddrInfo = Show-IPFwdAndRev -CIDRMask $CIDRMask
+  $JumpRevDec = (Show-IPFwdAndRev -CIDRMask ($CIDRMask)).RevDecIP - (Show-IPFwdAndRev -CIDRMask ($CIDRMask-1)).RevDecIP 
+  $JumpInfo   = Show-IPFwdAndRev -RevDecIP $JumpRevDec 
+  $JumpVal = [math]::Pow(2,(8-($CIDRMask % 8)))
+  $FnObjProp = [ordered]@{
+    CidrMask       = $CIDRMask
+    BinaryMask     = $IPAddrInfo.FwdBinary
+    IPv4FwdMask    = $IPAddrInfo.ForwardIP
+    DecimalFwdMask = $IPAddrInfo.FwdDecIP
+    IPv4RevMask    = $IPAddrInfo.ReverseIP
+    DecimalRevMask = $IPAddrInfo.RevDecIP
+    JumpIPs        = $JumpInfo.ForwardIP
+    JumpDecIP      = $JumpInfo.FwdDecIP
+    JumpRevIPs     = $JumpInfo.ReverseIP
+    JumpDecRevIP   = $JumpInfo.RevDecIP
+    JumpValue      = $JumpVal
+  }
+  New-Object -TypeName psobject -Property $FnObjProp
+}
+
