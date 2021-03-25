@@ -57,7 +57,9 @@ function Find-ValidSubnet {
   .PARAMETER HostsPerSubnetRequired
     This parameter dictates the minimum amount of hosts that are required per subnet.
   .PARAMETER SmallestSubnets
-    This parameter only shows the smallest subnets, those with the bigest subnet mask.
+    This parameter only shows the smallest subnets, those with the biggest subnet mask value.
+  .PARAMETER LargestSubnets
+    This parameter only shows the largest subnets, those with the smallest subnet mask value.
   .PARAMETER AllSubnetsVLSM
     This parameter show all possible subnets which can be very handy when planning VLSM subnets.
   .NOTES
@@ -78,6 +80,8 @@ function Find-ValidSubnet {
     [int]$HostsPerSubnetRequired,
     [Parameter(ParameterSetName='Subnet')]
     [switch]$SmallestSubnets,
+    [Parameter(ParameterSetName='Subnet')]
+    [switch]$LargestSubnets,
     [Parameter(ParameterSetName='VLSM')]
     [switch]$AllSubnetsVLSM
   )
@@ -204,8 +208,9 @@ function Find-ValidSubnet {
       # Go find the valid subnet ranges per valid subnet mask
       Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits
     }
-    if ($SmallestSubnets -eq $false) {$SubnetResults}
-    else {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
+    if ($SmallestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
+    if ($LargestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[0].Mask}}
+    if ($SmallestSubnets -ne $true -and $LargestSubnets -ne $true) {$SubnetResults}
   }
 }
 
@@ -353,9 +358,21 @@ function Convert-CIDRMask {
     [Parameter(ParameterSetName='IP')]
     [string]$IPV4Mask
   )
+  
   if ($PSCmdlet.ParameterSetName -eq 'IP') {
+    if ($IPV4Mask -notmatch '^(255\.(0|128|192|224|240|248|252|254|255)(\.0){2}|(255\.){2}(0|128|192|224|240|248|252|254|255)\.0|(255\.){3}(0|128|192|224|240|248|252|254|255))$') {
+      Write-Warning 'Not a valid subnet mask'
+      break
+    }
     $Binary = (Show-IPFwdAndRev -FwdIPAddress $IPV4Mask).FwdBinary
     $CIDRMask = ($Binary -replace '^(1+)0+$','$1').length
+  }
+  else {
+    if ($CIDRMask -notin @(8..30)) {
+      Write-Warning 'Not a valid subnet mask'
+      break
+    }
+
   }
     $IPAddrInfo = Show-IPFwdAndRev -CIDRMask $CIDRMask
     $JumpRevDec = (Show-IPFwdAndRev -CIDRMask ($CIDRMask)).RevDecIP - (Show-IPFwdAndRev -CIDRMask ($CIDRMask-1)).RevDecIP 
@@ -364,6 +381,7 @@ function Convert-CIDRMask {
   $FnObjProp = [ordered]@{
     CidrMask       = $CIDRMask
     BinaryMask     = $IPAddrInfo.FwdBinary
+    BinaryGroups   = $IPAddrInfo.FwdBinary -replace '(\d{8})(\d{8})(\d{8})(\d{8})','$1 $2 $3 $4'
     IPv4FwdMask    = $IPAddrInfo.ForwardIP
     DecimalFwdMask = $IPAddrInfo.FwdDecIP
     IPv4RevMask    = $IPAddrInfo.ReverseIP
