@@ -397,7 +397,7 @@ function New-SubnetPSSessions {
   $MySubnetMask = ((ipconfig /all).trim() |  Select-String -Pattern '^Subnet Mask' ) -replace '^.+\:\s','' 
   $IPRawText = (ipconfig /all).trim() |  Select-String -Pattern '^(DHCP Server|Default Gateway|DNS Servers|IPV4 Address)' 
   $IPArrayToExclude = $IPRawText -replace '(^.+\:\s|\(Preferred\))','' | Sort-Object @{e={($_ -replace '.*\.','') -as [int] }}
-  $Mask = (ConvertTo-IPAddressObject -IPAddress $MySubnetMask).CIDRMask
+  $Mask = (Convert-CIDRMask -IPV4Mask $MySubnetMask).CIDRMask
   $MaskFormats = Convert-CIDRMask -CIDRMask $Mask
   $JumpSize = $MaskFormats.JumpValue
   $ValidIPJump = $JumpSize - 2
