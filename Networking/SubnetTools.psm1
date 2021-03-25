@@ -238,9 +238,11 @@ function Show-IPFwdAndRev {
      ForwardIP : 192.168.20.13
      FwdDecIP  : 3232240653
      FwdBinary : 11000000101010000001010000001101
+     FwdBinaryGroups :  11000000 10101000 00010100 00001101
      ReverseIP : 13.20.168.192
      RevDecIP  : 219457728
      RevBinary : 00001101000101001010100011000000
+     FwdBinaryGroups :  00001101 00010100 10101000 11000000     
   .PARAMETER RevIPAddress
     This will take an IP that has been reversed and show all forms of that IP address
   .PARAMETER FwdIPAddress
@@ -315,9 +317,11 @@ function Show-IPFwdAndRev {
     ForwardIP = $FwdIP
     FwdDecIP  = ([ipaddress]$RevIP).Address
     FwdBinary = $FwdBinary
+    FwdBinaryGroups   = $FwdBinary -replace '(\d{8})(\d{8})(\d{8})(\d{8})','$1 $2 $3 $4'
     ReverseIP = $RevIP
     RevDecIP  = ([ipaddress]$FwdIP).Address
     RevBinary = $RevBinary
+    RevBinaryGroups   = $RevBinary -replace '(\d{8})(\d{8})(\d{8})(\d{8})','$1 $2 $3 $4'
   }
   New-Object -TypeName psobject -Property $FnObjProp
 }
@@ -338,6 +342,7 @@ function Convert-CIDRMask {
     This would produce this output, the reverse values are useful in PowerShell IP calulations
       CidrMask       : 20
       BinaryMask     : 11111111111111111111000000000000
+      BinaryGroups   : 11111111 11111111 11110000 00000000
       IPv4FwdMask    : 255.255.240.0
       DecimalFwdMask : 4294963200
       IPv4RevMask    : 0.240.255.255
