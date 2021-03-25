@@ -175,6 +175,13 @@ function Find-ValidSubnet {
     $SubnetsRequired = 1
     $HostsPerSubnetRequired = 1
   }
+  $BadEntry = $false
+  if ($PSCmdlet.ParameterSetName -eq 'VLSM' -and  $CIDRSubnetAddress -eq '') {$BadEntry = $true}
+  elseif ($CIDRSubnetAddress -eq '' -or $SubnetsRequired -eq 0 -or $SubnetsRequired -gt 22 -or $HostsPerSubnetRequired -gt 16777214) {$BadEntry = $true}
+  if ($BadEntry -eq $true) {
+    Write-Warning "Invalid or incomplete information was entered for this command, Please use Get-Help -Full $($MyInvocation.InvocationName)" 
+    break
+  }
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
   $SubnetID     = $CIDRParts[0] -as [string]
   $InitialMask  = $CIDRParts[1] -as [int]
