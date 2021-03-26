@@ -66,8 +66,7 @@ function Find-ValidSubnet {
     General notes
       Created by:    Brent Denny
       Created on:    09 Mar 2021
-      Last Modified: 16 Mar 2021
-      Version:       0.9.3
+      Last Modified: 26 Mar 2021
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
@@ -177,7 +176,7 @@ function Find-ValidSubnet {
   }
   $BadEntry = $false
   if ($PSCmdlet.ParameterSetName -eq 'VLSM' -and  $CIDRSubnetAddress -eq '') {$BadEntry = $true}
-  elseif ($CIDRSubnetAddress -eq '' -or $SubnetsRequired -eq 0 -or $SubnetsRequired -gt 22 -or $HostsPerSubnetRequired -gt 16777214) {$BadEntry = $true}
+  elseif ($CIDRSubnetAddress -eq '' -or $SubnetsRequired -eq 0 -or $SubnetsRequired -gt 4194304 -or $HostsPerSubnetRequired -gt 16777214) {$BadEntry = $true}
   if ($BadEntry -eq $true) {
     Write-Warning "Invalid or incomplete information was entered for this command, Please use Get-Help -Full $($MyInvocation.InvocationName) to learn more about how to run this command" 
     break
@@ -185,7 +184,7 @@ function Find-ValidSubnet {
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
   $SubnetID     = $CIDRParts[0] -as [string]
   $InitialMask  = $CIDRParts[1] -as [int]
-  $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2)) # +2 to cater for NetworkId and BroadcastID addresses
+  $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2)) + 1 # +2 to cater for NetworkId and BroadcastID addresses
   $NetworkBitsRequired = [math]::Floor([math]::Log($SubnetsRequired)/[math]::log(2))
   $TotalBitsRequired = $InitialMask + $HostBitsRequired + $NetworkBitsRequired  
   # Make sure the given IP addres is an IP Address 
