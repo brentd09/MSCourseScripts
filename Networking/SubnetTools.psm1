@@ -184,7 +184,7 @@ function Find-ValidSubnet {
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
   $SubnetID     = $CIDRParts[0] -as [string]
   $InitialMask  = $CIDRParts[1] -as [int]
-  $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2)) + 1 # +2 to cater for NetworkId and BroadcastID addresses
+  $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2))  # +2 to cater for NetworkId and BroadcastID addresses
   $NetworkBitsRequired = [math]::Floor([math]::Log($SubnetsRequired)/[math]::log(2))
   $TotalBitsRequired = $InitialMask + $HostBitsRequired + $NetworkBitsRequired  
   # Make sure the given IP addres is an IP Address 
@@ -212,7 +212,8 @@ function Find-ValidSubnet {
     }
     $SubnetResults = foreach ($SubnettedBits in $SubnetingBitsArray) {
       # Go find the valid subnet ranges per valid subnet mask
-      Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits
+      Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits | 
+       Where-Object {$_.HostsPerSubnet -ge $HostsPerSubnetRequired -and $_.TotalSubnets -ge $SubnetsRequired}
     }
     if ($SmallestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
     if ($LargestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[0].Mask}}
