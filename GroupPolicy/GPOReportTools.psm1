@@ -46,13 +46,17 @@ function Invoke-GPOSettingsReport {
   )
   try {$AllGPOs = Get-Gpo -Domain $DomainName -All -ErrorAction Stop}
   catch {Write-Warning "The GPOs could not be obtained from the system";break}  
-  if ($SelectGPOs -eq $true) {$GPOs = $AllGPOs | Select-Object -Property DisplayName,GUID | Out-GridView -OutputMode Multiple}
+  if ($SelectGPOs -eq $true) {
+    $GPOs = $AllGPOs | 
+    Select-Object -Property DisplayName,ID | 
+    Out-GridView -OutputMode Multiple -Title "Choose Which GPOs you wish to create reports for" 
+  }
   else {$GPOs = $AllGPOs}
   if ($GPOs.Count -eq 0) {Write-Warning "You must select at least one GPO";break}
   if (-not (Test-Path -Path $ReportDirectory -PathType Container)) {
     $Parent = $ReportDirectory | Split-Path -Parent 
     $Leaf = $ReportDirectory | Split-Path -leaf
-    try {New-Item -Path $Parent -Name $Leaf -ItemType Directory -ErrorAction Stop}
+    try {New-Item -Path $Parent -Name $Leaf -ItemType Directory -ErrorAction Stop | Out-Null}
     catch {Write-Warning -Message "$ReportDirectory cound not be created";break}
   }
   foreach ($GPO in $GPOs) {
@@ -60,3 +64,4 @@ function Invoke-GPOSettingsReport {
     Get-GpoReport -Guid $GPO.Id -ReportType $ReportType | Out-File -FilePath $ReportFilePath
   }
 }
+
