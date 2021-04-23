@@ -18,6 +18,11 @@ function Invoke-GPOSettingsReport {
     Invoke-GPOSettingReport -ReportDirectory 'e:\reports' -DomainName 'adatum.com' -ReportType 'html' -SelectGPOs
     This will get the GPOs from the adatum.com domain and present a gui tool to select which 
     GPOs to create reports for, this will then create a file per GPO in the E:\Reports folder.    
+  .EXAMPLE
+    Invoke-GPOSettingReport -ReportDirectory 'e:\reports' -DomainName 'adatum.com' -ReportType 'html' -BackupGpo
+    This will get the GPOs from the adatum.com domain and create reports for
+    all of them in the E:\Reports folder, it will also do a backup of the GPOs 
+    that can be restored later the backup will be stored in the same E:\Reports folder.    
   .PARAMETER ReportDirectory
     This is the directory that the reports will be created in, the 
     default value for this parameter is the users TMP directory found
@@ -30,11 +35,14 @@ function Invoke-GPOSettingsReport {
   .PARAMETER SelectGPOs
     This parameter flags this command to prompt via a Out-GridView GUI
     to choose which of the GPOs will have reports created
+  .PARAMETER BackupGPO
+    This parameter flags this command create a backup of the GPO and store
+    it in the same directory as the report
   .NOTES
     General notes
       Created by : Brent Denny
       Created on : 23-Apr-2021
-      Modified on: 23-Apr-2021
+      Modified on: 24-Apr-2021
   #>
   [CmdletBinding()]
   Param (
@@ -43,7 +51,8 @@ function Invoke-GPOSettingsReport {
     [string]$DomainName,
     [ValidateSet('html','xml')]
     [string]$ReportType = 'html',
-    [switch]$SelectGPOs
+    [switch]$SelectGPOs,
+    [switch]$BackupGPO
   )
   try {$AllGPOs = Get-Gpo -Domain $DomainName -All -ErrorAction Stop}
   catch {Write-Warning "The GPOs could not be obtained from the system";break}  
@@ -63,6 +72,7 @@ function Invoke-GPOSettingsReport {
   foreach ($GPO in $GPOs) {
     $ReportFilePath =  $ReportDirectory.TrimEnd('\') + '\' + $GPO.Displayname + ".$ReportType"
     Get-GpoReport -Guid $GPO.Id -ReportType $ReportType | Out-File -FilePath $ReportFilePath
+    if ($BackupGPO -eq $true) {Backup-Gpo -Guid $GPO.Id -Path $ReportDirectory -Domain $DomainName -Comment "Backup of $($GPO.Displayname)"}
   }
 }
 
