@@ -1,4 +1,4 @@
-function Invoke-GPOSettingReport {
+function Invoke-GPOSettingsReport {
   <#
   .SYNOPSIS
     This creates GPO reports for all of the GPOs in your domain
@@ -11,7 +11,7 @@ function Invoke-GPOSettingReport {
     Each file will be labelled as the GPO's Display Name and will
     have an extension of either html or xml, the default is html. 
   .EXAMPLE
-    Invoke-GPOSettingReport -ReportDirectory 'e:\reports' -DomainName 'adatum.com' -ReportType 'html'
+    Invoke-GPOSettingsReport -ReportDirectory 'e:\reports' -DomainName 'adatum.com' -ReportType 'html'
     This will get the GPOs from the adatum.com domain and create a file per GPO 
     in the E:\Reports folder.
   .NOTES
