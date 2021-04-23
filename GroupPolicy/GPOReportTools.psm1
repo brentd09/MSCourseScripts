@@ -72,7 +72,7 @@ function Invoke-GPOSettingsReport {
   foreach ($GPO in $GPOs) {
     $ReportFilePath =  $ReportDirectory.TrimEnd('\') + '\' + $GPO.Displayname + ".$ReportType"
     Get-GpoReport -Guid $GPO.Id -ReportType $ReportType | Out-File -FilePath $ReportFilePath
-    if ($BackupGPO -eq $true) {Backup-Gpo -Guid $GPO.Id -Path $ReportDirectory -Domain $DomainName -Comment "Backup of $($GPO.Displayname)"}
+    if ($BackupGPO -eq $true) {Backup-Gpo -Guid $GPO.Id -Path $ReportDirectory -Domain $DomainName -Comment "Backup of $($GPO.Displayname)" | Out-Null}
   }
 }
 
