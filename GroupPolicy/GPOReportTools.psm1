@@ -39,6 +39,7 @@ function Invoke-GPOSettingsReport {
   [CmdletBinding()]
   Param (
     [string]$ReportDirectory = ([System.IO.Path]::GetTempPath()),
+    [Parameter(Mandatory=$true)]
     [string]$DomainName,
     [ValidateSet('html','xml')]
     [string]$ReportType = 'html',
