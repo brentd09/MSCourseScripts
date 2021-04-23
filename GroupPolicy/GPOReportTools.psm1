@@ -45,7 +45,7 @@ function Invoke-GPOSettingsReport {
     [switch]$SelectGPOs
   )
   try {$AllGPOs = Get-Gpo -Domain $DomainName -All -ErrorAction Stop}
-  catch {Write-Warning "The GPOs could not be obtained from the system";break}  if ($SelectGPOs -eq $true) {
+  catch {Write-Warning "The GPOs could not be obtained from the system";break}  
   if ($SelectGPOs -eq $true) {$GPOs = $AllGPOs | Select-Object -Property DisplayName,GUID | Out-GridView -OutputMode Multiple}
   else {$GPOs = $AllGPOs}
   if ($GPOs.Count -eq 0) {Write-Warning "You must select at least one GPO";break}
