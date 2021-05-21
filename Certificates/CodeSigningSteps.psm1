@@ -34,16 +34,26 @@
   [cmdletbinding()]
   Param (
     [Parameter(Mandatory=$true)]
-    [string]$ScriptPath
+    [string]$ScriptPath,
+    [string]$CertificateThumbprint
   )
   if ((Test-Path -Path $ScriptPath -PathType Leaf) -eq $true -and $ScriptPath -match '.*\.psm?1' ) {
-    $CSCerts = Get-ChildItem -Path Cert:\CurrentUser\My -CodeSigningCert 
-    if ($CSCerts.Count -gt 0) {
-      $CSCerts | Select-Object -Property EnhancedKeyUsageList,Thumbprint,NotBefore,NotBefore,HasPrivateKey |
+    if ([string]::IsNullOrEmpty($CertificateThumbprint) -eq $true) {
+      $CSCerts = Get-ChildItem -Path Cert:\CurrentUser\My -CodeSigningCert 
+    }
+    else {
+      $CSCerts = Get-ChildItem -Path Cert:\CurrentUser\My -CodeSigningCert | Where-Object {$_.Thumbprint -eq $CertificateThumbprint}
+    }
+    if ($CSCerts.Count -gt 1) {
+      $CSCert = $CSCerts | Select-Object -Property EnhancedKeyUsageList,Thumbprint,NotBefore,NotBefore,HasPrivateKey |
         Out-GridView -OutputMode Single -Title "Choose the correct certificate"
+      Set-AuthenticodeSignature -Certificate $CSCert -FilePath $ScriptPath
+    }
+    elseif ($CSCerts.Count -eq 1) {
+      $CSCert = $CSCerts[0]
       Set-AuthenticodeSignature -Certificate $CSCert -FilePath $ScriptPath
     }
     else {Write-Warning 'There are no Code Signing certificates available'}
   }
   else {Write-Warning 'The file path was not correct'}
-}  
+}
