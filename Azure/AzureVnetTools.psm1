@@ -11,6 +11,11 @@
     so it is important to know which peering is what type.
     This command will prompt you if you need to login to Azure via a 
     Connect-AzAccount command
+    You cannot use Global VNet peering to communicate with VIPs of 
+    load balancers in another region. VIP communication requires source IP
+    to be on the same VNet as the LB IP: Resources in one virtual network 
+    cannot communicate with the IP address of an Azure internal load balancer 
+    in the peered virtual network.
   .EXAMPLE
     Get-AzPeeringType
     This will show all peerings (Global, Regional and NoPeering).
