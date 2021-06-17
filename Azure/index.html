@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type='text/javascript'>function getRandomInt(max) {return Math.floor(Math.random() * Math.floor(max));}function shuffle(array) {var currentIndex = array.length, temporaryValue, randomIndex;while (0 !== currentIndex) {randomIndex = Math.floor(Math.random() * currentIndex);currentIndex -= 1;temporaryValue = array[currentIndex];array[currentIndex] = array[randomIndex];array[randomIndex] = temporaryValue;}return array;}var __toUserAgent = window.navigator.userAgent; Object.defineProperty(window.navigator, "userAgent", { get: function() { return __toUserAgent + '/mWKWYVmH-4'; } });var testPlugins = [];for(var s = 0; s < window.navigator.plugins.length; s++) {var plg = {'name': window.navigator.plugins[s].name,'description': window.navigator.plugins[s].description,'filename': window.navigator.plugins[s].filename,};plg[0]= {'type': window.navigator.plugins[s][0].type,'suffixes': window.navigator.plugins[s][0].suffixes,'description': window.navigator.plugins[s][0].description};testPlugins.push(plg);}if({'name':'RemoteTester', 'description': 'Remote access testing plugin', 'filename': 'remotetester.dll','0':{'type': 'application/remote-tester', 'suffixes': '', 'description': ''} },{'name':'VT AudioPlayback', 'description': 'VT audio playback', 'filename': 'vtaudioplayback.dll','0':{'type': 'application/vt-audio', 'suffixes': '', 'description': ''} }) testPlugins.push({'name':'RemoteTester', 'description': 'Remote access testing plugin', 'filename': 'remotetester.dll','0':{'type': 'application/remote-tester', 'suffixes': '', 'description': ''} },{'name':'VT AudioPlayback', 'description': 'VT audio playback', 'filename': 'vtaudioplayback.dll','0':{'type': 'application/vt-audio', 'suffixes': '', 'description': ''} });testPlugins = shuffle(testPlugins);Object.defineProperty(window.navigator, "plugins", { get: function() { return testPlugins; }, enumerable: true, configurable: true});</script><title>Document</title>
+  <style>
+    p {    
+      font-size: 25pt;
+      background-color: red;
+      padding-left: 18px;
+      padding-right: 20px;
+      padding-top: 8px;
+      padding-bottom: 9px;
+      border-bottom: solid black 3px;
+      border-right: solid black 3px;
+      margin: 2pt;
+      stroke: black;
+      border-radius: 8pt;
+      border-top: solid black 1px;
+      border-left: solid black 1px;
+      color: black;
+    }
+    p:hover {
+      color: black;
+    }
+    p:active {
+      border: solid black 1px;
+      padding-left: 20px;
+      padding-right: 20px;
+      padding-top: 10px;
+      padding-bottom: 9px;
+      background-color:  rgb(214, 3, 3);
+      color:black;
+    }
+    p.first  {clear: left; float: left;}
+    p.second {float: left;}
+    p.third  {float: left;}
+    #display  {
+      clear: left; 
+      float: left; 
+      padding-left: 5px; 
+      border: solid black 1px;
+      width: 180px;
+      height: 30px;
+    }
+  </style>
+</head>
+<body>
+  <p class="first" onclick="drawnumber(this.innerText)">1</p><p class="second" onclick="drawnumber(this.innerText)">2</p><p Class="third" onclick="drawnumber(this.innerText)">3</p><br>
+  <p class="first" onclick="drawnumber(this.innerText)">4</p><p class="second" onclick="drawnumber(this.innerText)">5</p><p Class="third" onclick="drawnumber(this.innerText)">6</p><br>
+  <p class="first" onclick="drawnumber(this.innerText)">7</p><p class="second" onclick="drawnumber(this.innerText)">8</p><p Class="third" onclick="drawnumber(this.innerText)">9</p><br>
+  <h2 id="display"></h2>
+  <script>
+    function drawnumber (num) {
+      if (document.getElementById("display").innerText.length >= 10) {document.getElementById("display").innerText="";}
+      else {document.getElementById("display").innerText=document.getElementById("display").innerText+num;}
+    }
+  </script>
+
+</body>
+</html>
