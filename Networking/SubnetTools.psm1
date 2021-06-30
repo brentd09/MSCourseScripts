@@ -62,14 +62,20 @@ function Find-ValidSubnet {
     This parameter only shows the largest subnets, those with the smallest subnet mask value.
   .PARAMETER AllSubnetsVLSM
     This parameter show all possible subnets which can be very handy when planning VLSM subnets.
+  .PARAMETER AzureSubnet
+    This parameter changes the ranges of each subnet removing 5 host IDs as Azure uses 
+    x.x.x.1 for Default Gateway, x.x.x.2 & x.x.x.3 for DNS mapping.
   .NOTES
     General notes
       Created by:    Brent Denny
       Created on:    09 Mar 2021
-      Last Modified: 26 Mar 2021
+      Last Modified: 30 Jun 2021
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
+    [Parameter(ParameterSetName='VLSM')]
+    [Parameter(ParameterSetName='Subnet')]
+    [switch]$AzureSubnet,
     [Parameter(Mandatory=$true,ParameterSetName='VLSM')]
     [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
     [string]$CIDRSubnetAddress,
@@ -126,7 +132,8 @@ function Find-ValidSubnet {
     Param (
       [string]$IPAddress,
       [int]$InitialMask,
-      [int]$SubnetMask
+      [int]$SubnetMask,
+      [switch]$Azure
     )
     # This function will find all of the valid subnets for a subnetted mask, and list the following
     # Mask,Subnet,FirstValidIP,LastValidIP,BroadcastIP,HostsPerSubnet and Subnet Number
@@ -137,6 +144,8 @@ function Find-ValidSubnet {
       $JumpValue = 1
       $JumpIndex = $JumpIndex - 1
     }
+    if ($Azure -eq $true) {$AzureReserved = 3}
+    else {$AzureReserved = 0}
     [int[]]$JumpIPArray = 0,0,0,0
     $JumpIPArray[$JumpIndex] = $JumpValue
     $JumpIPAddr = $JumpIPArray -join '.' 
@@ -149,7 +158,7 @@ function Find-ValidSubnet {
       # within this function
       $ThisSubnetRevDec = $IPAddressSet.RevAddrDec + ($SubnetIndex * $JumpIPAddressSet.RevAddrDec)
       $ThisSubnetSet = ConvertTo-IPAddressObject -DecAddress $ThisSubnetRevDec
-      $FirstValidRevDec = $ThisSubnetRevDec + 1
+      $FirstValidRevDec = $ThisSubnetRevDec + 1 + $AzureReserved
       $LastValidRevDec  = $ThisSubnetRevDec + $JumpIPAddressSet.RevAddrDec - 2
       $BroadCastRevDec  = $ThisSubnetRevDec + $JumpIPAddressSet.RevAddrDec - 1
       $FirstValidSet = ConvertTo-IPAddressObject -DecAddress $FirstValidRevDec
@@ -161,7 +170,7 @@ function Find-ValidSubnet {
         FirstValidIP   = $FirstValidSet.FwdAddrIP
         LastValidIP    = $LastValidSet.FwdAddrIP
         BroadcastIP    = $BroadCastSet.FwdAddrIP
-        HostsPerSubnet = [math]::Pow(2,32 -$SubnetMask) - 2
+        HostsPerSubnet = [math]::Pow(2,32 -$SubnetMask) - (2 + $AzureReserved)
         Subnet         = $SubnetIndex + 1
         TotalSubnets   = $MaxSubnetIndex + 1
       }
@@ -184,7 +193,9 @@ function Find-ValidSubnet {
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
   $SubnetID     = $CIDRParts[0] -as [string]
   $InitialMask  = $CIDRParts[1] -as [int]
-  $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+2)/[math]::log(2))  # +2 to cater for NetworkId and BroadcastID addresses
+  if ($AzureSubnet -eq $true) {$Reserved = 5} # Azure reserves 5 hostids for internal and netork reasons
+  else {$Reserved = 2} # This is the subnetID and BroadcastID
+  $HostBitsRequired = [math]::Ceiling([math]::Log($HostsPerSubnetRequired+$Reserved)/[math]::log(2))  # +2 to cater for NetworkId and BroadcastID addresses
   $NetworkBitsRequired = [math]::Ceiling([math]::Log($SubnetsRequired)/[math]::log(2))
   $TotalBitsRequired = $InitialMask + $HostBitsRequired + $NetworkBitsRequired 
   # Make sure the given IP addres is an IP Address 
@@ -212,8 +223,14 @@ function Find-ValidSubnet {
     }
     $SubnetResults = foreach ($SubnettedBits in $SubnetingBitsArray) {
       # Go find the valid subnet ranges per valid subnet mask
-      Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits | 
-       Where-Object {$_.HostsPerSubnet -ge $HostsPerSubnetRequired -and $_.TotalSubnets -ge $SubnetsRequired}
+      if ($AzureSubnet -eq $true) {
+        Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits -Azure | 
+        Where-Object {$_.HostsPerSubnet -ge $HostsPerSubnetRequired -and $_.TotalSubnets -ge $SubnetsRequired}
+      }
+      else {
+        Find-IPSubnetRange -IPAddress $ActualNetworkAddrSet.FwdAddrIP -InitialMask $InitialMask -SubnetMask $SubnettedBits | 
+        Where-Object {$_.HostsPerSubnet -ge $HostsPerSubnetRequired -and $_.TotalSubnets -ge $SubnetsRequired}
+      }
     }
     if ($SmallestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
     if ($LargestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[0].Mask}}
