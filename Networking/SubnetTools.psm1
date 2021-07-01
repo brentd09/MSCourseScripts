@@ -89,6 +89,7 @@ Mask SubnetID     FirstValidIP LastValidIP    BroadcastIP    HostsPerSubnet Subn
   20 172.16.208.0 172.16.208.1 172.16.223.254 172.16.223.255           4094     14           16
   20 172.16.224.0 172.16.224.1 172.16.239.254 172.16.239.255           4094     15           16
   20 172.16.240.0 172.16.240.1 172.16.255.254 172.16.255.255           4094     16           16
+  
   .EXAMPLE
     Find-ValidSubnet -CIDRSubnetAddress 192.168.20.0/24 -AllSubnetsVLSM | Format-Table -GroupBy Mask
     Using the 192.168.20.0/24 network as a base this will find all subnets that are possible, this is very
@@ -261,7 +262,9 @@ Mask SubnetID       FirstValidIP   LastValidIP    BroadcastIP    HostsPerSubnet 
   30 192.168.20.244 192.168.20.245 192.168.20.246 192.168.20.247              2     62           64
   30 192.168.20.248 192.168.20.249 192.168.20.250 192.168.20.251              2     63           64
   30 192.168.20.252 192.168.20.253 192.168.20.254 192.168.20.255              2     64           64
-  .Example Find-ValidSubnet -AzureSubnet -CIDRSubnetAddress 200.107.30.0/24 -HostsPerSubnetRequired 12 -SubnetsRequired 4 | ft -GroupBy mask
+  
+  .Example 
+  Find-ValidSubnet -AzureSubnet -CIDRSubnetAddress 200.107.30.0/24 -HostsPerSubnetRequired 12 -SubnetsRequired 4 | ft -GroupBy mask
   This will calculate the required subnet ranges taking into account that Azure reserves 5 addresses by convention 
   instead of the 2 for a standard subnet:
   for a /24 subnet Azure reserves the folloing:
