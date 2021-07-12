@@ -304,9 +304,9 @@ function Find-ValidSubnet {
     allows for the number of hosts per subnet, -HostsPerSubnetRequired parameter value.
   .PARAMETER HostsPerSubnetRequired
     This parameter dictates the minimum amount of hosts that are required per subnet.
-  .PARAMETER SmallestSubnets
+  .PARAMETER SmallestSubnetMask
     This parameter only shows the smallest subnets, those with the biggest subnet mask value.
-  .PARAMETER LargestSubnets
+  .PARAMETER LargestSubnetMask
     This parameter only shows the largest subnets, those with the smallest subnet mask value.
   .PARAMETER AllSubnetsVLSM
     This parameter show all possible subnets which can be very handy when planning VLSM subnets.
@@ -332,9 +332,9 @@ function Find-ValidSubnet {
     [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
     [int]$HostsPerSubnetRequired,
     [Parameter(ParameterSetName='Subnet')]
-    [switch]$SmallestSubnets,
+    [switch]$SmallestSubnetMask,
     [Parameter(ParameterSetName='Subnet')]
-    [switch]$LargestSubnets,
+    [switch]$LargestSubnetMask,
     [Parameter(ParameterSetName='VLSM')]
     [switch]$AllSubnetsVLSM
   )
