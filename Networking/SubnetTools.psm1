@@ -91,7 +91,7 @@ function Find-ValidSubnet {
       20 172.16.240.0 172.16.240.1 172.16.255.254 172.16.255.255           4094     16           16
       
   .EXAMPLE
-    Find-ValidSubnet -CIDRSubnetAddress 192.168.20.0/24 -AllSubnetsVLSM | Format-Table -GroupBy Mask
+    Find-ValidSubnet -CIDRSubnetAddress 192.168.20.0/24 -AllSubnets | Format-Table -GroupBy Mask
     Using the 192.168.20.0/24 network as a base this will find all subnets that are possible, this is very
     handy when trying to plan VLSM subnets.
     
@@ -295,6 +295,26 @@ function Find-ValidSubnet {
       27 200.107.30.160 200.107.30.164 200.107.30.190 200.107.30.191             27      6            8
       27 200.107.30.192 200.107.30.196 200.107.30.222 200.107.30.223             27      7            8
       27 200.107.30.224 200.107.30.228 200.107.30.254 200.107.30.255             27      8            8
+  .EXAMPLE 
+    Find-ValidSubnet -CIDRSubnetAddress 122.1.1.0/24 -VLSMSubnetHostNumbers 90,20,10,2,2  | Format-Table
+
+    This would create multiple subnets from the Class C address to allow the following number of hosts to 
+    be accommodated by seperate subnets of varying sizes.
+    Subnet      Host Count
+    ------      ----------
+    Subnet1             90
+    Subnet2             20
+    Subnet3             10
+    Subnet4              2
+    Subnet5              2      
+
+    Mask SubnetID    FirstValidIP LastValidIP BroadcastIP HostsPerSubnet
+    ---- --------    ------------ ----------- ----------- --------------
+      25 122.1.1.0   122.1.1.1    122.1.1.126 122.1.1.127            126
+      27 122.1.1.128 122.1.1.129  122.1.1.158 122.1.1.159             30
+      28 122.1.1.160 122.1.1.161  122.1.1.174 122.1.1.175             14
+      30 122.1.1.176 122.1.1.177  122.1.1.178 122.1.1.179              2
+      30 122.1.1.180 122.1.1.181  122.1.1.182 122.1.1.183              2    
   .PARAMETER CIDRSubnetAddress
     This parameter requires the network address to be entered with the CIDR mask as well. 
     In this format 172.16.0.0/16
@@ -308,24 +328,28 @@ function Find-ValidSubnet {
     This parameter only shows the smallest subnets, those with the biggest subnet mask value.
   .PARAMETER LargestSubnetMask
     This parameter only shows the largest subnets, those with the smallest subnet mask value.
-  .PARAMETER AllSubnetsVLSM
-    This parameter show all possible subnets which can be very handy when planning VLSM subnets.
+  .PARAMETER AllSubnets
+    This parameter show all possible subnets.
   .PARAMETER AzureSubnet
     This parameter changes the ranges of each subnet removing 5 host IDs as Azure uses 
     x.x.x.1 for Default Gateway, x.x.x.2 & x.x.x.3 for DNS mapping.
+  .PARAMETER VLSMSubnetHostNumbers
+    This is the list of hosts per subnet to create VLSM subnets from  
   .NOTES
     General notes
       Created by:    Brent Denny
       Created on:    09 Mar 2021
-      Last Modified: 30 Jun 2021
+      Last Modified: 14 Jul 2021
   #>
   [cmdletbinding(DefaultParameterSetName='Default',PositionalBinding=$false)]
   Param (
-    [Parameter(ParameterSetName='VLSM')]
+    [Parameter(ParameterSetName='VLSM')]  
+    [Parameter(ParameterSetName='AllSubnets')]
     [Parameter(ParameterSetName='Subnet')]
     [switch]$AzureSubnet,
-    [Parameter(Mandatory=$true,ParameterSetName='VLSM')]
+    [Parameter(Mandatory=$true,ParameterSetName='AllSubnets')]
     [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
+    [Parameter(ParameterSetName='VLSM')]
     [string]$CIDRSubnetAddress,
     [Parameter(Mandatory=$true,ParameterSetName='Subnet')]
     [int]$SubnetsRequired,
@@ -335,8 +359,10 @@ function Find-ValidSubnet {
     [switch]$SmallestSubnetMask,
     [Parameter(ParameterSetName='Subnet')]
     [switch]$LargestSubnetMask,
+    [Parameter(ParameterSetName='AllSubnets')]
+    [switch]$AllSubnets,
     [Parameter(ParameterSetName='VLSM')]
-    [switch]$AllSubnetsVLSM
+    [int[]]$VLSMSubnetHostNumbers
   )
 
   function ConvertTo-IPAddressObject {
@@ -427,16 +453,21 @@ function Find-ValidSubnet {
   }
 
   ## MAIN Function BODY
-  if ($AllSubnetsVLSM -eq $true) {
+  if ($AllSubnets -eq $true) {
     $SubnetsRequired = 1
     $HostsPerSubnetRequired = 1
   }
   $BadEntry = $false
-  if ($PSCmdlet.ParameterSetName -eq 'VLSM' -and  $CIDRSubnetAddress -eq '') {$BadEntry = $true}
-  elseif ($CIDRSubnetAddress -eq '' -or $SubnetsRequired -eq 0 -or $SubnetsRequired -gt 4194304 -or $HostsPerSubnetRequired -gt 16777214) {$BadEntry = $true}
+  if ($PSCmdlet.ParameterSetName -in ('AllSubnets','VLSM') -and  $CIDRSubnetAddress -eq '') {$BadEntry = $true}
+  elseif ($CIDRSubnetAddress -eq '' -and ($SubnetsRequired -eq 0 -or $SubnetsRequired -gt 4194304 -or $HostsPerSubnetRequired -gt 16777214 -or $VLSMSubnetHostNumbers.count -eq 0)) {$BadEntry = $true}
   if ($BadEntry -eq $true) {
     Write-Warning "Invalid or incomplete information was entered for this command, Please use Get-Help -Full $($MyInvocation.InvocationName) to learn more about how to run this command" 
     break
+  }
+  if ($PSCmdlet.ParameterSetName -eq 'VLSM') {
+    $VLSMSubnetHostNumbers = $VLSMSubnetHostNumbers | Sort-Object -Descending
+    $SubnetsRequired = 1
+    $HostsPerSubnetRequired = 1
   }
   $CIDRParts    = $CIDRSubnetAddress -split '\/'
   $SubnetID     = $CIDRParts[0] -as [string]
@@ -480,9 +511,35 @@ function Find-ValidSubnet {
         Where-Object {$_.HostsPerSubnet -ge $HostsPerSubnetRequired -and $_.TotalSubnets -ge $SubnetsRequired}
       }
     }
-    if ($SmallestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
-    if ($LargestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[0].Mask}}
-    if ($SmallestSubnets -ne $true -and $LargestSubnets -ne $true) {$SubnetResults}
+    if ($PSCmdlet.ParameterSetName -ne 'VLSM') {
+      if ($SmallestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[-1].Mask}}
+      if ($LargestSubnets -eq $true) {$SubnetResults | Where-Object {$_.Mask -eq $SubnetResults[0].Mask}}
+      if ($SmallestSubnets -ne $true -and $LargestSubnets -ne $true) {$SubnetResults}
+    }
+    else {
+      [System.Collections.ArrayList]$ArrayListSubnets = $SubnetResults
+      Remove-Variable -Name Subnet -ErrorAction SilentlyContinue
+      $VLSMSubnets = @()
+      foreach ($HostCount in $VLSMSubnetHostNumbers) {
+        $TotalHosts = $HostCount + 2
+        $VLSMHostBits = [math]::Ceiling([math]::Log($TotalHosts)/[math]::Log(2))
+        $VlSMMask = 32 - $VLSMHostBits
+        if ($Subnet) {
+          $AddOneToBcIPLastOctet = (($Subnet.BroadcastIP -split '\.')[3] -as [int]) + 1
+          Write-Verbose " add one $AddOneToBcIPLastOctet"
+          Write-Verbose "subnet $Subnet"
+          $NextSubnetIP = (($Subnet.SubnetID -replace '^(\d{1,3}\.\d{1,3}\.\d{1,3}\.).+$','$1') + $AddOneToBcIPLastOctet ) -join '.'  
+          Write-Verbose "Next subnet $NextSubnetIP"
+          $Subnet = $ArrayListSubnets | Where-Object {$_.Mask -eq $VlSMMask -and $_.SubnetID -eq $NextSubnetIP} 
+        }
+        else {
+          $Subnet = $ArrayListSubnets | Where-Object {$_.Mask -eq $VlSMMask} | Select-Object -First 1
+        }
+        $VLSMSubnets += $Subnet | Select-Object -Property * -ExcludeProperty Subnet,TotalSubnets
+      }
+      if ($VLSMSubnets.Count -eq $VLSMSubnetHostNumbers.count) {$VLSMSubnets}
+      else {Write-Warning "This address space is not big enough to accommodate the subnets required"}
+    }
   }
 }
 
