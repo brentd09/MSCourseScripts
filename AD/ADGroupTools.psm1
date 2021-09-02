@@ -35,7 +35,7 @@ function Get-NestedGroup {
 
   function Get-DirectGroupMembership {
     Param ($ADObject)
-    $DirectObjects = Get-ADPrincipalGroupMembeship -Identity $ADObject
+    $DirectObjects = Get-ADPrincipalGroupMembership -Identity $ADObject
     foreach ($DirectObject in $DirectObjects) {
       if ($Minimal -eq $true) {
         $DirectObject | Select-Object -Property @{n='MemberOf';e={$_.Name}} | Sort-Object -Property MemberOf
