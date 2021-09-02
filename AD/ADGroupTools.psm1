@@ -29,22 +29,24 @@ function Get-NestedGroup {
       Select-Object -Property Name,Department |
       Sort-Object -property Department,Name |
       Out-GridView -OutputMode Single
-    ).Name 
+    ).Name,
+    [switch]$Minimal
   )
 
   function Get-DirectGroupMembership {
     Param ($ADObject)
-    $DirectGroups = Get-ADPrincipalGroupMembeship -Identity $ADObject
-    foreach ($DirectGroup in $DirectGroups) {
-      $DirectGroup | Select-Object -Property @{n='InitialObject';e={$ADObject.Name}},Name,DistinguishedName
-      Get-DirectGroupMembership -ADObject $DirectGroup
+    $DirectObjects = Get-ADPrincipalGroupMembeship -Identity $ADObject
+    foreach ($DirectObject in $DirectObjects) {
+      if ($Minimal -eq $true) {
+        $DirectObject | Select-Object -Property @{n='MemberOf';e={$_.Name}} | Sort-Object -Property MemberOf
+      }
+      else {
+        $DirectObject | Select-Object -Property @{n='Member';e={$ADObject.Name}},@{n='MemberOf';e={$_.Name}},@{n='MemberOfDN';e={$ADObject.DistinguishedName}}
+      }
+      Get-DirectGroupMembership -ADObject $DirectObject
     }
   }
 
   $UserObject = Get-ADUser -Filter {Name -eq $UserName}
-  $UserGroups = Get-ADPrincipalGroupMembeship -Identity $UserObject
-  foreach ($UserGroup in $UserGroups) {
-    $UserGroup | Select-Object -Property @{n='InitialObject';e={$ADObject.Name}},Name,DistinguishedName
-    Get-DirectGroupMembership -ADObject $UserGroup
-  }
+  Get-DirectGroupMembership -ADObject $UserObject
 }
