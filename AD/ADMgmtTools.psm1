@@ -2,7 +2,7 @@
   Functions in this module
     Get-ADFsmoMasters
 #>
-function Get-ADFsmoMasters {
+function Get-ADFsmoMaster {
   <# 
   .Synopsis
     Retrieves the FSMO Role holders.
@@ -13,9 +13,9 @@ function Get-ADFsmoMasters {
     NETBIOS name of the domain controller and will translate it into 
     the FQDN. 
   .EXAMPLE
-    Get-ADFsmoMasters
+    Get-ADFsmoMaster
   .EXAMPLE
-    Get-ADFsmoMasters -DomainController dc1.company.com
+    Get-ADFsmoMaster -DomainController dc1.company.com
   .PARAMETER DomainController
     Points the script to a domain controller this could either be the FQDN 
     or the NETBIOS name both will work as long as DNS can resolve this name 
