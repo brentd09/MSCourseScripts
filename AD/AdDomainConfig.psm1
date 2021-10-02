@@ -3,7 +3,7 @@ function Get-ADConfigurationLevel {
   .SYNOPSIS
     Determine Domain and Forest functional levels and SYSVOL replication type
   .DESCRIPTION
-    Determines what doamain and forest fuctional levels are ser and 
+    Determines what doamain and forest fuctional levels are set and 
     whether the SYSVOL replication is via FRS or DFS-R. The FRS replication
     is a very old technology and was in place from Windows 2000 up until the end of 
     Windows server 2003. Domain Controllers that were in-place upgraded will still be 
