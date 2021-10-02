@@ -1,4 +1,4 @@
-function Get-SysvolReplicationType {
+function Get-ADConfigurationLevel {
   <#
   .SYNOPSIS
     Determine SYSVOL replication type
@@ -8,7 +8,7 @@ function Get-SysvolReplicationType {
     Windows server 2003. Domain Controllers that were in-place upgraded will still be 
     using FRS unless the DFS migration was undertaken 
   .EXAMPLE
-    Get-SysvolReplicationType -ComputerName 'LON-DC1' -Domain 'adatum.com'
+    Get-ADConfigurationLevel -ComputerName 'LON-DC1' -Domain 'adatum.com'
     This will check for the the domain adatum.com by communicating with the DC LON-DC1
     to determine which type of SYSVOL replication is being used.
   .PARAMETER ComputerName
@@ -36,8 +36,17 @@ function Get-SysvolReplicationType {
     $DfsrSysvolString = "CN=Domain System Volume,CN=DFSR-GlobalSettings,CN=System,$((Get-ADDomain $DNSDomainName).DistinguishedName)"
     $FRSStatus = Get-ADObject -Filter { distinguishedName -eq $FrsSysvolString }
     $DFSRStatus = Get-ADObject -Filter { distinguishedName -eq $DfsrSysvolString } 
-    if ($FRSStatus) { Write-Host -ForegroundColor Red "$DNSDomainName is using FRS for SYSVOL replication" }
-    elseif ($DFSRStatus) { Write-Host -ForegroundColor Green "$DNSDomainName is using DFS-R for SYSVOL replication" }
-    else { Write-Host -ForegroundColor Red "The SYSVOL replication method is undetermined" }
+    $DomainFL = Get-Domain -Identity $DNSDomainName
+    $ForestFL = Get-Forest 
+    if ($FRSStatus) { $SysVolRep = 'FRS'}
+    elseif ($DFSRStatus) { $SysVolRep = 'DFS-R' }
+    else { $SysVolRep = 'undetermined' }
   }
+  $ObjProp = [ordered]@{
+    Domain = $DNSDomainName
+    DomainFuctionalLevel = $DomainFL.DomainMode
+    ForestFuctionalLevel = $ForestFL.ForestMode
+    SysvolReplication = $SysVolRep
+  }
+  return (New-Object -TypeName psobject -Property $ObjProp)
 }
