@@ -31,17 +31,15 @@ function Get-ADConfigurationLevel {
     [Parameter(Mandatory=$true)]
     [string]$DNSDomainName 
   )
-  Invoke-Command -ComputerName $ComputerName -ScriptBlock {
-    $FrsSysvolString = "CN=Domain System Volume (SYSVOL share),CN=File Replication Service,CN=System,$((Get-ADDomain $DNSDomainName).DistinguishedName)"
-    $DfsrSysvolString = "CN=Domain System Volume,CN=DFSR-GlobalSettings,CN=System,$((Get-ADDomain $DNSDomainName).DistinguishedName)"
-    $FRSStatus = Get-ADObject -Filter { distinguishedName -eq $FrsSysvolString }
-    $DFSRStatus = Get-ADObject -Filter { distinguishedName -eq $DfsrSysvolString } 
-    $DomainFL = Get-Domain -Identity $DNSDomainName
-    $ForestFL = Get-Forest 
-    if ($FRSStatus) { $SysVolRep = 'FRS'}
-    elseif ($DFSRStatus) { $SysVolRep = 'DFS-R' }
-    else { $SysVolRep = 'undetermined' }
-  }
+  $FrsSysvolString = "CN=Domain System Volume (SYSVOL share),CN=File Replication Service,CN=System,$((Get-ADDomain $DNSDomainName).DistinguishedName)"
+  $DfsrSysvolString = "CN=Domain System Volume,CN=DFSR-GlobalSettings,CN=System,$((Get-ADDomain $DNSDomainName).DistinguishedName)"
+  $FRSStatus = Get-ADObject -Filter { distinguishedName -eq $FrsSysvolString }
+  $DFSRStatus = Get-ADObject -Filter { distinguishedName -eq $DfsrSysvolString } 
+  $DomainFL = Get-Domain -Server $ComputerName
+  $ForestFL = Get-Forest -Server $ComputerName
+  if ($FRSStatus) { $SysVolRep = 'FRS'}
+  elseif ($DFSRStatus) { $SysVolRep = 'DFS-R' }
+  else { $SysVolRep = 'Unkown' }
   $ObjProp = [ordered]@{
     Domain = $DNSDomainName
     DomainFuctionalLevel = $DomainFL.DomainMode
