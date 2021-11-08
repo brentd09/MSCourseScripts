@@ -8,7 +8,8 @@ function Invoke-AzPolicyEvaluation {
   .EXAMPLE
     Invoke-AzPolicyEvaluation
     This triggers the Policy evaluation within this subscription.
-    You can locate the subscription ID by using the Get-AzSubscription PowerShell cmdlet
+    The cmdlet will discover if you are connected to Azure and 
+    will connect if not.
   .NOTES
     General notes
       Created by:   Brent Denny
