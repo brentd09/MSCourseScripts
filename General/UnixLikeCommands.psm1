@@ -38,6 +38,28 @@
 }
 
 function Watch-Command {
+  <#
+  .SYNOPSIS
+    Runs a command pipeline multiple time looking for changes in output
+  .DESCRIPTION
+    This command runs a pipeline multiple times watching the output for 
+    changes in the output, when it detects changes in the output it will 
+    then update the screen output 
+  .EXAMPLE
+    Watch-Command -CommandLineToExecute 'Get-Process | Sort-Object -Descending -Property CPU | Select-Object -First 10'
+    This will output the top ten processes by CPU and not update the 
+    information until it detects these is a change in the output. 
+  .PARAMETER CommandLineToExecute
+    This contains a string that represents a command that will be run to compare the results 
+    and display only changes to the screen.
+  .PARAMETER ResultCount
+    This is how many different results to show before exiting the command, the default is 10.  
+  .NOTES
+    General notes
+      Created by: Brent Denny
+      Created on: 13 Dec 2021
+      Last EDited : 14 Dec 2021
+  #>
   [CmdletBinding()]
   param (
     [string]$CommandLineToExecute,
