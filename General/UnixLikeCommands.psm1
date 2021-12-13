@@ -36,3 +36,25 @@
     write-warning "You must search for an executable`nUsage: Where-Executable -Executable write"
   }
 }
+
+function Watch-Command {
+  [CmdletBinding()]
+  param (
+    [string]$CommandLineToExecute,
+    [int]$ResultCount = 10
+  )
+  $Counter = 0
+  $Result = Invoke-Expression $CommandLineToExecute | Out-String
+  Clear-Host
+  Write-Output $Result
+  do {
+    $PrevResult = $Result
+    do {
+      Start-Sleep -Seconds 10
+      $Result = Invoke-Expression $CommandLineToExecute | Out-String
+    } until ($PrevResult -ne $Result)
+    Clear-Host
+    $Result
+    $Counter++
+  } while ($Counter -le $ResultCount)
+}
