@@ -72,7 +72,7 @@ function Watch-Command {
   do {
     $PrevResult = $Result
     do {
-      Start-Sleep -Seconds 10
+      Start-Sleep -Seconds 1
       $Result = Invoke-Expression $CommandLineToExecute | Out-String
     } until ($PrevResult -ne $Result)
     Clear-Host
