@@ -46,11 +46,11 @@ function Watch-Command {
     changes in the output, when it detects changes in the output it will 
     then update the screen output 
   .EXAMPLE
-    Watch-Command -CommandLineToExecute 'Get-Process | Sort-Object -Descending -Property CPU | Select-Object -First 10'
+    Watch-Command -ScriptBlock {Get-Process | Sort-Object -Descending -Property CPU | Select-Object -First 10}
     This will output the top ten processes by CPU and not update the 
     information until it detects these is a change in the output. 
-  .PARAMETER CommandLineToExecute
-    This contains a string that represents a command that will be run to compare the results 
+  .PARAMETER ScriptBlock
+    This contains a command pipeline that will be run to compare the results 
     and display only changes to the screen.
   .PARAMETER ResultCount
     This is how many different results to show before exiting the command, the default is 10.  
@@ -58,22 +58,22 @@ function Watch-Command {
     General notes
       Created by: Brent Denny
       Created on: 13 Dec 2021
-      Last EDited : 14 Dec 2021
+      Last EDited : 15 Dec 2021
   #>
   [CmdletBinding()]
   param (
-    [string]$CommandLineToExecute,
+    [ScriptBlock]$ScriptBlock,
     [int]$ResultCount = 10
   )
   $Counter = 0
-  $Result = Invoke-Expression $CommandLineToExecute | Out-String
+  $Result = $ScriptBlock.Invoke() | Out-String
   Clear-Host
   Write-Output $Result
   do {
     $PrevResult = $Result
     do {
       Start-Sleep -Seconds 1
-      $Result = Invoke-Expression $CommandLineToExecute | Out-String
+      $Result = $ScriptBlock.Invoke() | Out-String
     } until ($PrevResult -ne $Result)
     Clear-Host
     $Result
