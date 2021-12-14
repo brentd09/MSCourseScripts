@@ -58,7 +58,10 @@ function Watch-Command {
     General notes
       Created by: Brent Denny
       Created on: 13 Dec 2021
-      Last EDited : 15 Dec 2021
+      Last Edited : 14 Dec 2021 
+      Versions: 
+        0.1 used invoke expression, this required quotes for the parameter value
+        0.2 used [ScriptBlock] type and the Invoke method, more natural cmd line with { } around scriptblock
   #>
   [CmdletBinding()]
   param (
