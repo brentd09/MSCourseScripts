@@ -25,7 +25,7 @@
       ThermalZone = $TemperatureProbe.InstanceName
       Kelvin = $TemperatureProbe.CurrentTemperature / 10
       Celsius = ($TemperatureProbe.CurrentTemperature / 10) - 273.15
-      Faharenheit = (($TemperatureProbe.CurrentTemperature / 10) * 9 / 5) + 32
+      Faharenheit = (($TemperatureProbe.CurrentTemperature / 10  - 273.15) * 9 / 5) + 32
     }
     New-object -TypeName psobject -Property $ObjProperties   
   }
