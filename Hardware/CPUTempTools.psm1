@@ -1,4 +1,5 @@
 ﻿function Get-CPUTemperature {
+  #REQUIRES -RunAsAdministrator
   <#
   .SYNOPSIS
     Shows the cpu temperature probe results
