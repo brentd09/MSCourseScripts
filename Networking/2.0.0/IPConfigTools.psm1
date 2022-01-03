@@ -14,7 +14,7 @@
       AdapterName           = $NetAdapter.Name
       InterfaceID           = $NetAdapter.ifIndex
       Description           = $NetAdapter.InterfaceDescription
-      PhysicalAddress       = $NetAdapter.MacAddress
+      PhysicalAddress       = $WMIAdapter.MacAddress
       DHCPEnabled           = $WMIAdapterConf.DHCPEnabled
       LinkLocalAddress      = $WMIAdapterConf.IPAddress | Where-Object {$_ -match '^FE80'}
       IPv4Address           = $WMIAdapterConf.IPAddress | Where-Object {$_ -notmatch ':'}
