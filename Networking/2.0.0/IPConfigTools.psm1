@@ -1,6 +1,9 @@
 ﻿function Get-IPConfig {
   [CmdletBinding()]
-  Param([switch]$All)
+  Param(
+    [switch]$All,
+    [switch]$Connected  
+  )
   $NetAdapters = Get-NetAdapter -IncludeHidden | Where-Object {$_.MacAddress -notmatch '^$'}
   $WMIAdapters = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object {$_.InterfaceIndex -in $NetAdapters.ifIndex}
   $WMIAdapterConfigs = Get-CimInstance -ClassName Win32_NetworkAdapterConfiguration | Where-Object {$_.InterfaceIndex -in $NetAdapters.ifIndex} 
@@ -9,6 +12,9 @@
     $WMIAdapter     = $WMIAdapters | Where-Object {$_.InterfaceIndex -eq $NetAdapter.ifIndex}
     $WMIAdapterConf = $WMIAdapterConfigs | Where-Object {$_.InterfaceIndex -eq $NetAdapter.ifIndex}
     $IPInterFace    = $IPInterFaces | Where-Object {$_.ifIndex -eq $NetAdapter.ifIndex}
+    if ($Connected -eq $true) {
+      if ($IPInterFace.ConnectionState -notcontains "Connected") {continue}
+    }
     if ($All -eq $false) {
       $AdapProp = [ordered]@{
         AdapterName           = $NetAdapter.Name
