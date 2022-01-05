@@ -1,4 +1,31 @@
 ﻿function Get-IPConfig {
+  <#
+  .SYNOPSIS
+    Mimic the ipconfig Windows command 
+  .DESCRIPTION
+    This command will replicate about 90% of the information that results from the
+    ipconfig and ipconfig /all commands.
+  .EXAMPLE
+    Get-IPConfig 
+    Gives basic IP information on every interface that carries a MAC address
+  .EXAMPLE
+    Get-IPConfig -All
+    Gives detailed IP information on every interface that carries a MAC address
+  .EXAMPLE
+    Get-IPConfig -Connected
+    Gives basic IP information on every interface that has a connection state of Connected
+  .EXAMPLE
+    Get-IPConfig -Connected -All
+    Gives detailed IP information on every interface that has a connection state of Connected
+  .PARAMETER All
+    Shows detailed output
+  .PARAMETER Connected 
+    Only displays those interfaces that have a connection state of Connected
+  .NOTES
+    General notes
+      Created by: Brent Denny
+      Created on: 05-Jan-2022
+  #>
   [CmdletBinding()]
   Param(
     [switch]$All,
