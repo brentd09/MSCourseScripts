@@ -11,9 +11,7 @@
     $IPInterFace    = $IPInterFaces | Where-Object {$_.ifIndex -eq $NetAdapter.ifIndex}
     if ($All -eq $false) {
       $AdapProp = [ordered]@{
-        HostName              = $NetAdapter.SystemName
         AdapterName           = $NetAdapter.Name
-        InterfaceID           = $NetAdapter.ifIndex
         Description           = $NetAdapter.InterfaceDescription
         LinkLocalAddress      = $WMIAdapterConf.IPAddress | Where-Object {$_ -match '^FE80'}
         IPv4Address           = $WMIAdapterConf.IPAddress | Where-Object {$_ -notmatch ':'}
