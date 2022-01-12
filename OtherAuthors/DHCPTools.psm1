@@ -1,4 +1,82 @@
 ﻿function Invoke-DhcpDiscover {
+    <#
+  .SYNOPSIS
+    Sends DHCP Discover packet to detect DHCP Servers sending DHCP Offers
+  .DESCRIPTION
+    This command sends a DHCP Discover packet to show all of the DHCP Offers that
+    are responding. This is similar to the legacy DHCPLoc.exe tool.
+  .EXAMPLE
+    Invoke-DhcpDiscover 
+    Sends DHCP Discover packet to detect DHCP Servers sending DHCP Offers
+  .PARAMETER MacAddress
+    MAC Address String in Hex-Decimal Format can be delimited with 
+    dot, dash or colon (or none)
+  .PARAMETER UUIDString
+    The UUID/GUID-based Client Machine Identifier option is defined in [RFC4578], 
+    with option code 97. The option is part of a set of options for Intel 
+    Preboot eXecution Environment (PXE). The purpose of the PXE system is to perform 
+    management functions on a device before its main OS is operational. 
+    The Client Machine Identifier carries a 16-octet Globally Unique Identifier (GUID), 
+    which uniquely identifies the device.
+  .PARAMETER Option60String
+    The DHCP functionality supports the DHCP vendor class identifier option (option 60). 
+    This support allows DHCP relay to compare option 60 strings in received DHCP client 
+    packets against strings that you configure on the router. You can use the DHCP relay 
+    option 60 feature when providing converged services in your network environment—option 60
+    support enables DHCP relay to direct client traffic to the specific DHCP server 
+    (the vendor-option server) that provides the service that the client requires. 
+    Or, as another option, you can configure option 60 strings to direct traffic to the DHCP 
+    local server in the current virtual router.
+  .PARAMETER ProcessorArchitecture
+    Possible Processor Architecture values here: https://www.iana.org/assignments/dhcpv6-parameters/processor-architecture.csv
+     x86-x64 Bios = 0
+     x86 UEFI = 6
+     x64 UEFI = 7
+     xEFIBC = 9 
+  .PARAMETER DiscoverTimeout
+    Length of time (in seconds) to spend waiting for Offers if
+    the connection does not timeout first
+  .NOTES
+    General notes
+  
+    Net-DhcpDiscover.ps1 Originating Author: Chris Dent from Origin Date: 16/02/2010 
+    Origin Source: http://www.indented.co.uk/2010/02/17/dhcp-discovery/ 
+    Major Rework Author: Andreas Hammarskjöld @ 2Pint Software Rework Date: 7/02/2017 Http://2pintsoftware.com 
+    A script to send a DHCPDISCOVER request and report on DHCPOFFER responses returned by all DHCP Servers on the current subnet. 
+    Also adding PXE Option to discover ProxyDHCP servers. DHCP Packet Format (RFC 2131 - http://www.ietf.org/rfc/rfc2131.txt): 
+  
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    |     op (1)    |   htype (1)   |   hlen (1)    |   hops (1)    |
+    +---------------+---------------+---------------+---------------+
+    |                            xid (4)                            |
+    +-------------------------------+-------------------------------+
+    |           secs (2)            |           flags (2)           |
+    +-------------------------------+-------------------------------+
+    |                          ciaddr  (4)                          |
+    +---------------------------------------------------------------+
+    |                          yiaddr  (4)                          |
+    +---------------------------------------------------------------+
+    |                          siaddr  (4)                          |
+    +---------------------------------------------------------------+
+    |                          giaddr  (4)                          |
+    +---------------------------------------------------------------+
+    |                                                               |
+    |                          chaddr  (16)                         |
+    |                                                               |
+    |                                                               |
+    +---------------------------------------------------------------+
+    |                                                               |
+    |                          sname   (64)                         |
+    +---------------------------------------------------------------+
+    |                                                               |
+    |                          file    (128)                        |
+    +---------------------------------------------------------------+
+    |                                                               |
+    |                          options (variable)                   |
+    +---------------------------------------------------------------+
+  #>
   Param(
     [String]$MacAddressString = "AA:BB:CC:DD:EE:FF",
     [String]$UUIDString = "AABBCCDD-AABB-AABB-AABB-AABBCCDDEEFF",
