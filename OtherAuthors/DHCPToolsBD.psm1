@@ -94,6 +94,25 @@
     $MacAddressString = $MacAddressString -Replace "-|:" 
     $MacAddress = [BitConverter]::GetBytes(([UInt64]::Parse($MacAddressString, [Globalization.NumberStyles]::HexNumber)))
     [Array]::Reverse($MacAddress)
+
+    $DhcpDiscover_Option60 = New-Object Byte[] 2 # Option 60 - Client ID (PXEClient)
+    $DhcpDiscover_Option60[0] = 60
+    $DhcpDiscover_Option60[1] = [System.Text.Encoding]::ASCII.GetBytes($Option60String).Length;
+    $Option60Array = [System.Text.Encoding]::ASCII.GetBytes($Option60String);
+    $DhcpDiscover_Option60 = $DhcpDiscover_Option60 + $Option60Array;
+    
+    $DhcpDiscover_Option93 = New-Object Byte[] 4 # Option 93 - Processor Arch (0 - Intel x86PC)
+    $DhcpDiscover_Option93[0] = 93 
+    $DhcpDiscover_Option93[1] = 2 
+    $DhcpDiscover_Option93[2] = 0
+    $DhcpDiscover_Option93[3] = $ProcessorArchitecture
+    
+    $DhcpDiscover_Option97 = New-Object Byte[] 2 # Option 97 - UUID/GUID
+    $DhcpDiscover_Option97[0] = 97
+    $DhcpDiscover_Option97[1] = 36 
+    $UUIDArray = [System.Text.Encoding]::ASCII.GetBytes($UUIDString);
+    $DhcpDiscover_Option97 = $DhcpDiscover_Option97 + $UUIDArray;
+
     $DhcpDiscover = New-Object Byte[] 243
     $DhcpDiscover[0] = 1      # op Byte 0
     $DhcpDiscover[1] = 1      # htype Byte 1
@@ -104,34 +123,24 @@
     $DhcpDiscover[9] = 0      # secs Byte 9
     $DhcpDiscover[10] = 128   # flags Byte 10 [128=broadcast]  (Bytes 10-11)
     $DhcpDiscover[11] = 0     # flags Byte 11
+    # ciaddr  Bytes 12-15 (Not required for a broadcast discovery packet)
+    # yiaddr  Bytes 16-19 (Not required for a broadcast discovery packet)
+    # siaddr  Bytes 20-23 (Not required for a broadcast discovery packet)
+    # siaddr  Bytes 24-27 (Not required for a broadcast discovery packet)
     [Array]::Copy($MACAddress, 2, $DhcpDiscover, 28, 6) # chaddr Bytes 28-43 [MACaddress]
+    # sname  Bytes 44-107 (Not required for a discovery packet)    
+    # file  Bytes 108-235 (Optionally used by a client to request a particular type of boot file) 
     $DhcpDiscover[236] = 99   # magic-cookie  Byte 236 (Bytes 236-239)
     $DhcpDiscover[237] = 130  # magic-cookie  Byte 237 
     $DhcpDiscover[238] = 83   # magic-cookie  Byte 238
     $DhcpDiscover[239] = 99   # magic-cookie  Byte 239
+    # All DHCP options start with first byte is option number, second byte is 
+    # the length of X bytes required for data, remain X  bytes of data that relates to the option
     $DhcpDiscover[240] = 53   # DHCP message-type Byte 240 [DHCP Option 53] 
     $DhcpDiscover[241] = 1    # DHCP message-type Byte 241 [option size]
     $DhcpDiscover[242] = 1    # DHCP message-type Byte 242 [CHCP discover]
-
-    $DhcpDiscover_Option60 = New-Object Byte[] 2
-    $DhcpDiscover_Option60[0] = 60
-    $DhcpDiscover_Option60[1] = [System.Text.Encoding]::ASCII.GetBytes($Option60String).Length;
-    $Option60Array = [System.Text.Encoding]::ASCII.GetBytes($Option60String);
-    $DhcpDiscover_Option60 = $DhcpDiscover_Option60 + $Option60Array;
     $DhcpDiscover = $DhcpDiscover + $DhcpDiscover_Option60;
-
-    $DhcpDiscover_Option93 = New-Object Byte[] 4 
-    $DhcpDiscover_Option93[0] = 93 # options start with the option number 
-    $DhcpDiscover_Option93[1] = 2 # and the next byte is the number of Bytes that the option needs
-    $DhcpDiscover_Option93[2] = 0
-    $DhcpDiscover_Option93[3] = $ProcessorArchitecture
     $DhcpDiscover = $DhcpDiscover + $DhcpDiscover_Option93;
-    
-    $DhcpDiscover_Option97 = New-Object Byte[] 2
-    $DhcpDiscover_Option97[0] = 97
-    $DhcpDiscover_Option97[1] = 36 
-    $UUIDArray = [System.Text.Encoding]::ASCII.GetBytes($UUIDString);
-    $DhcpDiscover_Option97 = $DhcpDiscover_Option97 + $UUIDArray;
     $DhcpDiscover = $DhcpDiscover + $DhcpDiscover_Option97;
 
     Return $DhcpDiscover
@@ -180,13 +189,11 @@
         1 {
           $Option.OptionName = "SubnetMask"
           $Option.OptionValue = `
-            $("$($Reader.ReadByte()).$($Reader.ReadByte())." + `
-            "$($Reader.ReadByte()).$($Reader.ReadByte())") }
+            $("$($Reader.ReadByte()).$($Reader.ReadByte())." + "$($Reader.ReadByte()).$($Reader.ReadByte())") }
         3 {
           $Option.OptionName = "Router"
           $Option.OptionValue = `
-            $("$($Reader.ReadByte()).$($Reader.ReadByte())." + `
-            "$($Reader.ReadByte()).$($Reader.ReadByte())") }
+            $("$($Reader.ReadByte()).$($Reader.ReadByte())." + "$($Reader.ReadByte()).$($Reader.ReadByte())") }
         6 {
           $Option.OptionName = "DomainNameServer"
           $Option.OptionValue = @()
