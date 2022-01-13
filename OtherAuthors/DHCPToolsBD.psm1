@@ -289,7 +289,7 @@
   $UdpSocket.Bind($EndPoint)
   $EndPoint = [Net.EndPoint](
   New-Object Net.IPEndPoint($([Net.IPAddress]::Broadcast, 67)))
-  $BytesSent = $UdpSocket.SendTo($Message, $EndPoint)
+  $UdpSocket.SendTo($Message, $EndPoint) | Out-Null
   $NoConnectionTimeOut = $True
   $Start = Get-Date
   While ($NoConnectionTimeOut) {
