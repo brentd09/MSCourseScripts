@@ -67,13 +67,13 @@
        |                                                               |
        |                                                               |
        +---------------------------------------------------------------+
-  72   |                                                               |
+  44   |                                                               |
        |                          sname   (64)                         |
        +---------------------------------------------------------------+
-  136  |                                                               |
+  108  |                                                               |
        |                          file    (128)                        |
        +---------------------------------------------------------------+
-  264  |                                                               |
+  236  |                                                               |
        |                          options (variable)                   |
        +---------------------------------------------------------------+
   #>
@@ -95,29 +95,28 @@
     $MacAddress = [BitConverter]::GetBytes(([UInt64]::Parse($MacAddressString, [Globalization.NumberStyles]::HexNumber)))
     [Array]::Reverse($MacAddress)
     $DhcpDiscover = New-Object Byte[] 243
-    $DhcpDiscover[0] = 1     # op Byte 0
-    $DhcpDiscover[1] = 1     # htype Byte 1
-    $DhcpDiscover[2] = 6     # hlen Byte 2
-    $DhcpDiscover[3] = 0     # hops Byte 3
-    [Array]::Copy($XID, 0, $DhcpDiscover, 4, 4) # xid Bytes 4-7
-    $DhcpDiscover[8] = 0     # secs Bytes 8-9
-    $DhcpDiscover[9] = 0     # secs Bytes 8-9
-    $DhcpDiscover[10] = 128  # broadcast flag Byte 10
-    [Array]::Copy($MACAddress, 2, $DhcpDiscover, 28, 6) # chaddr Bytes 28-71 
+    $DhcpDiscover[0] = 1      # op Byte 0
+    $DhcpDiscover[1] = 1      # htype Byte 1
+    $DhcpDiscover[2] = 6      # hlen Byte 2
+    $DhcpDiscover[3] = 0      # hops Byte 3 - this is set to zero if client request
+    [Array]::Copy($XID, 0, $DhcpDiscover, 4, 4) # xid Bytes 4-7 - random code
+    $DhcpDiscover[8] = 0      # secs Byte 8 (Bytes 8-9) - zero if client request
+    $DhcpDiscover[9] = 0      # secs Byte 9
+    $DhcpDiscover[10] = 128   # flags Byte 10 [128=broadcast]  (Bytes 10-11)
+    $DhcpDiscover[11] = 0     # flags Byte 11
+    [Array]::Copy($MACAddress, 2, $DhcpDiscover, 28, 6) # chaddr Bytes 28-43 [MACaddress]
     $DhcpDiscover[236] = 99   # magic-cookie  Byte 236 (Bytes 236-239)
     $DhcpDiscover[237] = 130  # magic-cookie  Byte 237 
     $DhcpDiscover[238] = 83   # magic-cookie  Byte 238
     $DhcpDiscover[239] = 99   # magic-cookie  Byte 239
-    $DhcpDiscover[240] = 53   #  Byte 240
-    $DhcpDiscover[241] = 1    #  Byte 241
-    $DhcpDiscover[242] = 1    #  Byte 242
+    $DhcpDiscover[240] = 53   # DHCP message-type Byte 240 [DHCP Option 53] 
+    $DhcpDiscover[241] = 1    # DHCP message-type Byte 241 [option size]
+    $DhcpDiscover[242] = 1    # DHCP message-type Byte 242 [CHCP discover]
 
     $DhcpDiscover_Option60 = New-Object Byte[] 2
     $DhcpDiscover_Option60[0] = 60
     $DhcpDiscover_Option60[1] = [System.Text.Encoding]::ASCII.GetBytes($Option60String).Length;
-
     $Option60Array = [System.Text.Encoding]::ASCII.GetBytes($Option60String);
-
     $DhcpDiscover_Option60 = $DhcpDiscover_Option60 + $Option60Array;
     $DhcpDiscover = $DhcpDiscover + $DhcpDiscover_Option60;
 
@@ -126,16 +125,15 @@
     $DhcpDiscover_Option93[1] = 2 # and the next byte is the number of Bytes that the option needs
     $DhcpDiscover_Option93[2] = 0
     $DhcpDiscover_Option93[3] = $ProcessorArchitecture
-
     $DhcpDiscover = $DhcpDiscover + $DhcpDiscover_Option93;
     
     $DhcpDiscover_Option97 = New-Object Byte[] 2
     $DhcpDiscover_Option97[0] = 97
     $DhcpDiscover_Option97[1] = 36 
-
     $UUIDArray = [System.Text.Encoding]::ASCII.GetBytes($UUIDString);
     $DhcpDiscover_Option97 = $DhcpDiscover_Option97 + $UUIDArray;
     $DhcpDiscover = $DhcpDiscover + $DhcpDiscover_Option97;
+
     Return $DhcpDiscover
   }
   Function Read-DhcpPacket( [Byte[]]$Packet ) {
@@ -258,7 +256,9 @@
       [Int32]$SendTimeOut = 5,
       [Int32]$ReceiveTimeOut = 5
     )
-    $UdpSocket = New-Object Net.Sockets.Socket([Net.Sockets.AddressFamily]::InterNetwork,[Net.Sockets.SocketType]::Dgram,[Net.Sockets.ProtocolType]::Udp)
+    $UdpSocket = New-Object Net.Sockets.Socket(
+      [Net.Sockets.AddressFamily]::InterNetwork,[Net.Sockets.SocketType]::Dgram,[Net.Sockets.ProtocolType]::Udp
+    )
     $UdpSocket.EnableBroadcast = $True
     $UdpSocket.ExclusiveAddressUse = $False
     $UdpSocket.SendTimeOut = $SendTimeOut * 1000
