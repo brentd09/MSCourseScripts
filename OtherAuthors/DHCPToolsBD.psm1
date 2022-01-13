@@ -136,9 +136,9 @@
     $DhcpDiscover[9] = 0      # secs Byte 9
     $DhcpDiscover[10] = 128   # flags Byte 10 (Bytes 10-11) [128 instructs the DHCP to respond as a broadcast]
     $DhcpDiscover[11] = 0     # flags Byte 11
-    # ciaddr  Bytes 12-15 [Used to renewing existing Client IP Address (ciaddr), not used in DORA ]
-    # yiaddr  Bytes 16-19 [The IP address that the server is assigning to the client]
-    # siaddr  Bytes 20-23 [DHCP Server address]
+    # ciaddr  Bytes 12-15 [Used for renewing existing Client IP Address (ciaddr), not used in DORA ]
+    # yiaddr  Bytes 16-19 [The IP address that the server is assigning to the client, Your IP address]
+    # siaddr  Bytes 20-23 [DHCP Server IP address]
     # giaddr  Bytes 24-27 [Relay Agents IP Address]
     [Array]::Copy($MACAddress, 2, $DhcpDiscover, 28, 6) # chaddr Bytes 28-43 [Client's MACaddress]
     # sname  Bytes 44-107 [When Offering an IP address the server can enter its FQDN here]
