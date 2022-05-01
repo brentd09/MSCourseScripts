@@ -88,8 +88,8 @@ function Import-ExcelSpreadSheet {
       else {$ConvertedObj += $RowObject }
       $Row++
     } until ($Row -eq 1500 -or $Cells[$Row,1].Text -eq '')
-    $Output = if ($Format -eq 'CSV') {$ConvertedObj | ConvertTo-Csv} 
-              elseif ($Format -eq 'MarkdownTable') { Convert-CsvToMarkdownTable -CSV ($ConvertedObj | ConvertTo-Csv) }
+    $Output = if ($Format -eq 'CSV') {$ConvertedObj | ConvertTo-Csv -NoTypeInformation} 
+              elseif ($Format -eq 'MarkdownTable') { Convert-CsvToMarkdownTable -CSV ($ConvertedObj | ConvertTo-Csv -NoTypeInformation) }
     return ($Output) 
   }
 }
