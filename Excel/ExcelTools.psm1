@@ -73,7 +73,7 @@ function Import-ExcelSpreadSheet {
       $ColumnPos++
       If ($Cells[1,$ColumnPos].Text -ne '') {$Headers += $Cells[1,$ColumnPos].Text}
       else { break }
-    } while ($ColumnPos -lt 1000)
+    } while ($Cells[1,$ColumnPos].Text -ne '')
     $Row = 2
     do {
       $ColNum = 0
@@ -87,7 +87,7 @@ function Import-ExcelSpreadSheet {
       if ($Row -eq 2) {$ConvertedObj = $RowObject } 
       else {$ConvertedObj += $RowObject }
       $Row++
-    } until ($Row -eq 1500 -or $Cells[$Row,1].Text -eq '')
+    } until ($Cells[$Row,1].Text -eq '')
     $Output = if ($Format -eq 'CSV') {$ConvertedObj | ConvertTo-Csv -NoTypeInformation} 
               elseif ($Format -eq 'MarkdownTable') { Convert-CsvToMarkdownTable -CSV ($ConvertedObj | ConvertTo-Csv -NoTypeInformation) }
     return ($Output) 
