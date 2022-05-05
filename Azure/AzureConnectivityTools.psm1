@@ -1,10 +1,14 @@
 function Test-AzConnection {
   [cmdletbinding()]
   Param (
-    $ResourceGroupName = "RgName",
-    $SourceVMName = "MachineName",
-    $DestinationIPAddress = "1.1.1.1",
-    $DestinationPort = 3389
+    [Parameter(Mandatory=$true)]
+    $ResourceGroupName ,
+    [Parameter(Mandatory=$true)]
+    $SourceVMName,
+    [Parameter(Mandatory=$true)]
+    $DestinationIPAddress,
+    [Parameter(Mandatory=$true)]
+    $DestinationPort
   )
   try {Get-AzResourceGroup -Name $ResourceGroupName -ErrorAction Stop | Out-Null}
   catch {
