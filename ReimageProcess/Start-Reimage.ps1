@@ -25,9 +25,12 @@ function Send-WakeOnLan {
   }
   end {}
 }
+
+
+
 Clear-Host
 # Get IP info from interface
-$PhysicalNetAdapter = Get-NetAdapter -Physical
+$PhysicalNetAdapter = Get-NetAdapter -Physical | Where-Object {$_.Status -eq 'UP'}
 $IPInfo = Get-NetIPAddress -InterfaceIndex $PhysicalNetAdapter.ifIndex -AddressFamily IPv4 
 $BinSNM = '1' * $IPInfo.PrefixLength + '0' * (32 - $IPInfo.PrefixLength)
 $DecSNM = ([System.Net.IPAddress]"$([System.Convert]::ToInt64($BinSNM,2))").IPAddressToString
@@ -46,35 +49,25 @@ $RevIP = [ipaddress](($SNIDObj.IPAddressToString -split '\.')[-1..-4] -join '.')
 $RemoveIPsFromList = @()
 $RemoveIPsFromList += (Get-NetIPConfiguration -InterfaceIndex $PhysicalNetAdapter.ifIndex | ForEach-Object { $_.IPv4DefaultGateway}).NextHop
 $RemoveIPsFromList += ([System.Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces()).getIPproperties().dhcpserveraddresses.ipaddresstostring
+$RemoveIPsFromList += $IPInfo.Address
 # Add hosts to fill the subnet range and unreverse IP addresses
-$AllIPs = 1..($TotalIPs - 2)  | ForEach-Object {
+# $AllIPs = 1..($TotalIPs - 2)  | ForEach-Object {
+$AllIPs = 10..99  | ForEach-Object {
   $rev = [ipaddress]($RevIP.Address + $_)
   $unrev = [ipaddress](($rev.IPAddressToString -split '\.')[-1..-4] -join '.')
   if ($unrev.IPAddressToString -notin $RemoveIPsFromList) {$unrev.IPAddressToString}
 }
 
 # clear arp cache, test for active IPs
-arp -d
-foreach ($IP in $AllIPs) {
-  Test-Connection  -ComputerName $IP -AsJob *> $null
-} 
+Get-NetNeighbor | Remove-NetNeighbor -Confirm:$false
+foreach ($IP in $AllIPs) {Test-Connection  -ComputerName $IP -AsJob *> $null} 
 
-# Convert arp table into a PS object
-$ArpCacheTemplate = @'
-
-Interface: 10.71.59.20 --- 0x3
-  Internet Address      Physical Address      Type
-  {IPAddress*:10.71.59.1}            {MACAddress:00-08-2f-f4-61-4b}     dynamic
-  {IPAddress*:10.71.59.127}          {MACAddress:ff-ff-ff-ff-ff-ff}     static
-  {IPAddress*:224.0.0.22}            {MACAddress:01-00-5e-00-00-16}     static
-'@
-$ArpResult = arp -a
-$ReachablePCs = $ArpResult | ConvertFrom-String -TemplateContent $ArpCacheTemplate 
+$ReachablePCs = Get-NetNeighbor -State Reachable -AddressFamily IPv4 | Where-Object {$_.IPAddress -in $AllIPs}
 
 # Determine who is reachable and is a Classroom PC and pickup their hostnames
 $PCsInClass = foreach ($ReachablePC in $ReachablePCs) { 
   if ($ReachablePC.IPAddress -in $AllIPs) {
-    $PingResult = ping -n 1 -w 30 -a $ReachablePC.IPAddress
+    $PingResult = ping -n 1 -w 5 -a $ReachablePC.IPAddress
     if ($PingResult -match 'DDLS') {$ReachablePC | Select-Object -Property @{n='ComputerName';e={($PingResult -split '\s+')[2]}},*}
   } 
 }
@@ -85,7 +78,7 @@ Write-Host -ForegroundColor Cyan "Classroom Computers Located"
 Write-Host -ForegroundColor Cyan "---------------------------"
 "{0,20} {1,20} {2,20}" -f 'MAC Address','IP Address','Computer Name'
 "{0,20} {1,20} {2,20}" -f '-----------','----------','-------------'
-foreach ($PC in $PCsInClass) {"{0,20} {1,20} {2,20}" -f $PC.MACAddress,$PC.IPAddress,$PC.ComputerName}
+foreach ($PC in $PCsInClass) {"{0,20} {1,20} {2,20}" -f $PC.LinkLayerAddress,$PC.IPAddress,$PC.ComputerName}
 Read-Host "`ngot them all?"
 
 
