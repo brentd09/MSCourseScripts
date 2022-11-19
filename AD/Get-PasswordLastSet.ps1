@@ -31,9 +31,9 @@
   Process {
     Foreach ($account in $identity) {
       $dateStamp = $null
-      $domainController =$null
+      $domainController = $null
        # filter used to remove Azure domain controllers
-      Get-ADDomainController -Filter {Site -eq "xyz"} | Foreach {
+      Get-ADDomainController -Filter * | ForEach-Object {
         $dc = $_.HostName
         $PasswordLastSet = (Get-ADUser $account -Properties PasswordLastSet -server $dc).PasswordLastSet
         if ($dateStamp -le $PasswordLastSet) {
@@ -44,8 +44,8 @@
         
       $properties = @{
         Name=$account;
-        PasswordLastSet=$dateStamp;
-        DomainController=$domainController
+        PasswordLastSet = $dateStamp;
+        DomainController = $domainController
       }
       New-Object -TypeName PSObject -Prop $properties
     } # End of ForEach
