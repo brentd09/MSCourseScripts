@@ -31,7 +31,7 @@ function Get-AzAsgMembership {
     foreach ($MatchingNic in $MatchingNics) {
       $MatchingVM = $VMs | Where-Object {$_.NetworkProfile.NetworkInterfaces.Id -contains $MatchingNic.Id} 
       if ($MatchingVM) {
-        [PSCustomObject]@{
+        [PSCustomObject][Ordered]@{
           ASG = $ASG.Name
           VM  = $MatchingVM.Name
           NIC = $MatchingNic.Name
