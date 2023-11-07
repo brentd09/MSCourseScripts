@@ -2,7 +2,7 @@ function Get-AzAsgToVMMapping {
   [CmdletBinding()]
   Param ()
 
-  try {Connect-AzAccount -ErrorAction Stop}
+  try {Connect-AzAccount -ErrorAction Stop *> $null}
   catch {Write-Warning "Please download the AZ module from PowerShell Gallery before running this again"; break}
 
   $AllASGs = Get-AzApplicationSecurityGroup
@@ -14,7 +14,7 @@ function Get-AzAsgMembership {
   [CmdletBinding()]
   Param ()  
   
-  try {Connect-AzAccount -ErrorAction Stop}
+  try {Connect-AzAccount -ErrorAction Stop *> $null}
   catch {Write-Warning "Please download the AZ module from PowerShell Gallery before running this again"; break}
   $AzNics = Get-AzNetworkInterface
   $VMs    = Get-AzVM
