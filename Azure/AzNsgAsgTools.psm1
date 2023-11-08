@@ -14,6 +14,21 @@ function Get-AzAsgToVMMapping {
 }
 
 function Get-AzAsgMembership {
+  <#
+  .SYNOPSIS
+    This lists the computers and their NICs that are in an ASG
+  .DESCRIPTION
+    Listing an ASG membership is difficult, the only way via the GUI is to visit each computer and
+    check to see if it is a member of an ASG, if you had 100's of VMs this would be impractical.
+  .NOTES
+    Created By: Brent Denny
+    Created On: 7-Nov-2023
+  .EXAMPLE
+    Get-AzAsgMembership 
+    This command will list all of the ASGs and any VM that is a member of each ASG along with their NIC
+  #>
+  
+  
   [CmdletBinding()]
   Param ()  
   
