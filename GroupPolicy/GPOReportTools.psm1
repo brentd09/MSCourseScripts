@@ -100,10 +100,16 @@ function Get-GPOLinkReport {
   #>
   [CmdletBinding()]
   Param (
-    [string]$Domain ,
-    [string]$ComputerName 
+    [string]$Domain = '',
+    [string]$ComputerName = '' 
   )
   [System.Collections.ArrayList]$GPRept = @()
+  if ($Domain -eq '') {
+    if ($ComputerName -eq '') {$AllGpo = Get-GPO -All}
+    else {$AllGpo = Get-GPO -All -Server $ComputerName}
+  elseif ($ComputerName -eq '') {$AllGpo = Get-GPO -All -Domain $Domain }
+  else {$AllGpo = Get-GPO -All -Domain $Domain -Server $ComputerName}
+  }
   $AllGpo = Get-GPO -All -Domain $Domain -Server $ComputerName
   foreach ($Gpo in $AllGpo) {
     $GPOInfo = $Gpo | Get-GPO  -Domain $Domain -Server $ComputerName
