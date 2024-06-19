@@ -76,3 +76,44 @@ function Invoke-GPOSettingsReport {
   }
 }
 
+function Get-GPOLinkReport {
+<#
+  .Synopsis
+     This command reports on all GPOs and where they are linked
+  .DESCRIPTION
+     This command will report on the GPOs that are found in a 
+     given domain and server and will report GPO Name, GUID, and Links
+  .PARAMETER Domain
+     This parameter will search in the Active Directory domain 
+     specified to find the GPOs to create the report
+  .PARAMETER ComputerName
+     This parameter targets a specific Domain Controller in the 
+     domain to create the report
+  .EXAMPLE
+     Get-GPOLinkReport -Domain adatum.com -Server LON-DC1
+     This will inspect the GPOs that exist in the adatum domain
+     and create a report that shows where they are linked
+  .NOTES
+     General notes
+     Created By: Brent Denny
+     Created On: 19-Jun-2024
+  #>
+  [CmdletBinding()]
+  Param (
+    [string]$Domain ,
+    [string]$ComputerName 
+  )
+  [System.Collections.ArrayList]$GPRept = @()
+  $AllGpo = Get-GPO -All -Domain $Domain -Server $ComputerName
+  foreach ($Gpo in $AllGpo) {
+    $GPOInfo = $Gpo | Get-GPO  -Domain $Domain -Server $ComputerName
+    [XML]$GroupPolicy = $Gpo | Get-GPOReport -ReportType XML
+    $GPLinkInfo = [PSCustomObject]@{
+      GpoName = $GroupPolicy.GPO.Name
+      GpoGUID = $GPOInfo.ID
+      Links   = $GroupPolicy.GPO.LinksTo.SOMPath
+    }
+    $GPRept.Add($GPLinkInfo)
+  }
+  $GPRept | Sort-Object -Property GpoName
+}
