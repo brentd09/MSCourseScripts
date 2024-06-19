@@ -77,7 +77,7 @@ function Invoke-GPOSettingsReport {
 }
 
 function Get-GPOLinkReport {
-<#
+  <#
   .Synopsis
      This command reports on all GPOs and where they are linked
   .DESCRIPTION
@@ -100,26 +100,31 @@ function Get-GPOLinkReport {
   #>
   [CmdletBinding()]
   Param (
-    [string]$Domain = '',
-    [string]$ComputerName = '' 
+    [string]$Domain = $null,
+    [string]$ComputerName = $null
   )
   [System.Collections.ArrayList]$GPRept = @()
-  if ($Domain -eq '') {
-    if ($ComputerName -eq '') {$AllGpo = Get-GPO -All}
-    else {$AllGpo = Get-GPO -All -Server $ComputerName}
-  elseif ($ComputerName -eq '') {$AllGpo = Get-GPO -All -Domain $Domain }
-  else {$AllGpo = Get-GPO -All -Domain $Domain -Server $ComputerName}
+  if ($Domain) {
+    if ($ComputerName) {$AllGpo = Get-GPO -All -Domain $Domain -Server $ComputerName}
+    else {$AllGpo = Get-GPO -All -Domain $Domain}
   }
-  $AllGpo = Get-GPO -All -Domain $Domain -Server $ComputerName
+  elseif ($ComputerName) {$AllGpo = Get-GPO -All -Server $ComputerName}
+  else {$AllGpo = Get-GPO -All}
   foreach ($Gpo in $AllGpo) {
-    $GPOInfo = $Gpo | Get-GPO  -Domain $Domain -Server $ComputerName
+    if ($Domain) {
+      if ($ComputerName) {$Gpo = Get-GPO  -Domain $Domain -Server $ComputerName}
+      else {$GPOInfo = $Gpo | Get-GPO -Domain $Domain}
+    }
+    elseif ($ComputerName) {$GPOInfo = $Gpo | Get-GPO -Server $ComputerName}
+    else {$Gpo = $Gpo | Get-GPO}
     [XML]$GroupPolicy = $Gpo | Get-GPOReport -ReportType XML
     $GPLinkInfo = [PSCustomObject]@{
       GpoName = $GroupPolicy.GPO.Name
       GpoGUID = $GPOInfo.ID
       Links   = $GroupPolicy.GPO.LinksTo.SOMPath
     }
-    $GPRept.Add($GPLinkInfo)
+    $GPRept.Add($GPLinkInfo) *> $null
   }
   $GPRept | Sort-Object -Property GpoName
 }
+
