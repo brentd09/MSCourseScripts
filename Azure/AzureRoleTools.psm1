@@ -19,6 +19,7 @@
   It will then show all of the roles that contain any of these actions  
 .EXAMPLE  
   Find-AzRoleFromAction -Action 'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete'
+
   This will find all Roles that have this action and not have this action in the 
   NotActions. If it cannot find the specific action, it will then devolove the 
   action to be more broad in its search.
@@ -34,6 +35,7 @@
     Microsoft.Storage/*  
 .EXAMPLE  
   Find-AzRoleFromAction -Action 'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete' -DevolutionLevel 2
+
   This will find all Roles that have this action and not have this action in the 
   NotActions. If it cannot find the specific action, it will then devolove the 
   action to be more broad in its search but it will only devolve two levels.
