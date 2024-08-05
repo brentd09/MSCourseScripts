@@ -17,11 +17,30 @@
     Microsoft.Storage/*/delete
     Microsoft.Storage/*
   It will then show all of the roles that contain any of these actions  
-.EXAMPLE
+.EXAMPLE  
   Find-AzRoleFromAction -Action 'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete'
   This will find all Roles that have this action and not have this action in the 
   NotActions. If it cannot find the specific action, it will then devolove the 
   action to be more broad in its search.
+    Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete
+    Microsoft.Storage/storageAccounts/blobServices/containers/blobs/*
+    Microsoft.Storage/storageAccounts/blobServices/containers/*/delete
+    Microsoft.Storage/storageAccounts/blobServices/containers/*
+    Microsoft.Storage/storageAccounts/blobServices/*/delete
+    Microsoft.Storage/storageAccounts/blobServices/*
+    Microsoft.Storage/storageAccounts/*/delete
+    Microsoft.Storage/storageAccounts/*
+    Microsoft.Storage/*/delete
+    Microsoft.Storage/*  
+.EXAMPLE  
+  Find-AzRoleFromAction -Action 'Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete' -DevolutionLevel 2
+  This will find all Roles that have this action and not have this action in the 
+  NotActions. If it cannot find the specific action, it will then devolove the 
+  action to be more broad in its search but it will only devolve two levels.
+    Microsoft.Storage/storageAccounts/blobServices/containers/blobs/delete
+    Microsoft.Storage/storageAccounts/blobServices/containers/blobs/*
+    Microsoft.Storage/storageAccounts/blobServices/containers/*/delete
+    Microsoft.Storage/storageAccounts/blobServices/containers/*
 .PARAMETER Action
   This is the action that needs to be found within an existing Azure Role.
   The Actions are in this format:
