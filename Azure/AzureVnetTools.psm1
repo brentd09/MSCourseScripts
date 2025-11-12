@@ -1,4 +1,4 @@
-﻿function Get-AzPeeringType {
+function Get-AzPeeringType {
   <#
   .SYNOPSIS
     Lists all of the Azure virtual networks peerings and determines their type
@@ -36,7 +36,7 @@
     General notes
       Created by: Brent Denny
       Created on: 6 May 2020
-      Last Modified: 1 Jul 2020
+      Last Modified: 12 Nov 2025 - fixed an issue where it was not reporting broken peers correctly
   #>
   [cmdletbinding()]
   Param(
@@ -51,9 +51,23 @@
       if ($VNet.VirtualNetworkPeerings.Count -ge 1) {
         $Peerings = $VNet.VirtualNetworkPeerings
         foreach ($Peering in $Peerings) {
+          if ( $Peering.PeeringState -ne "Connected" ) {
+             $Hash = [ordered]@{
+              VNetName = $VNet.Name
+              ResourceGroup = $VNet.ResourceGroupName
+              VNetLocation = $VNet.Location
+              PeeringVNet = $PeerName
+              PeeringVNetLocation = $PeerVNetLocation
+              PeeringType = "Disconnected"
+              VNetID = $VNet.Id
+            }
+            New-Object -TypeName psobject -Property $Hash   
+            break
+          }
           $PeerID = $Peering.remotevirtualnetwork.Id
           $PeerName = $PeerID -replace '.+\/(.+)$','$1'
           $PeerVNetInfo = $VNets | Where-Object {$_.Id -eq $PeerID}
+          write-debug "Just before location"
           $PeerVNetLocation = $PeerVNetInfo.Location
           if ($VNet.Location -eq $PeerVNetLocation) {$PeerType = 'Regional'}
           else {$PeerType = 'Global'}
